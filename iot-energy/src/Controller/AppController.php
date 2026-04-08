@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
-use Cake\View\JsonView;
+use Cake\Http\Response;
 
 /**
  * Application Controller
@@ -42,11 +42,9 @@ class AppController extends Controller
     {
         parent::initialize();
 
-        $this->loadComponent('Flash');
-        $this->loadComponent('Authentication.Authentication', [
-            'requireIdentity' => false,
-        ]);
-        $this->addViewClasses([JsonView::class]);
+        //$this->loadComponent('RequestHandler');
+        $this->loadComponent('Authentication.Authentication');
+        $this->viewBuilder()->setClassName('Json');
 
         /*
          * Enable the following component for recommended CakePHP form protection settings.
@@ -56,19 +54,37 @@ class AppController extends Controller
     }
 
     /**
-     * Render a JSON payload without needing a matching template file.
+     * Return a JSON response payload.
      *
-     * @param array<string, mixed> $payload Data to serialize.
-     * @param int $statusCode HTTP status code.
-     * @return void
+     * @param array<string, mixed> $data Response data.
+     * @param int $status HTTP status code.
+     * @return \Cake\Http\Response
      */
-    protected function renderJson(array $payload, int $statusCode = 200): void
+    protected function renderJson(array $data, int $status = 200): Response
     {
-        $this->viewBuilder()->setClassName(JsonView::class);
-        $this->response = $this->response
+        $this->set($data);
+        $this->viewBuilder()->setOption('serialize', array_keys($data));
+
+        return $this->response = $this->response
             ->withType('application/json')
-            ->withStatus($statusCode);
-        $this->set($payload);
-        $this->viewBuilder()->setOption('serialize', array_keys($payload));
+            ->withStatus($status);
     }
+
+    protected function success(array $data = [], string $message = 'Success', int $status = 200)
+{
+    return $this->renderJson([
+        'status' => 'success',
+        'message' => $message,
+        'data' => $data
+    ], $status);
+}
+
+protected function error(string $message = 'Error', array $errors = [], int $status = 400)
+{
+    return $this->renderJson([
+        'status' => 'error',
+        'message' => $message,
+        'errors' => $errors
+    ], $status);
+}
 }

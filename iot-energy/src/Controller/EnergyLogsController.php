@@ -11,110 +11,95 @@ namespace App\Controller;
 class EnergyLogsController extends AppController
 {
     /**
-     * @return void
+     * Index method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
      */
-    public function index(): void
+    public function index()
     {
-        $energyLogs = $this->paginate(
-            $this->EnergyLogs->find()->contain(['Devices']),
-        );
+        $query = $this->EnergyLogs->find()
+            ->contain(['Devices']);
+        $energyLogs = $this->paginate($query);
 
-        $this->renderJson([
-            'status' => 'success',
-            'energyLogs' => $energyLogs,
-        ]);
+        $this->set(compact('energyLogs'));
     }
 
     /**
-     * @param string|null $id Energy log id.
-     * @return void
+     * View method
+     *
+     * @param string|null $id Energy Log id.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null): void
+    public function view($id = null)
     {
         $energyLog = $this->EnergyLogs->get($id, contain: ['Devices']);
-
-        $this->renderJson([
-            'status' => 'success',
-            'energyLog' => $energyLog,
-        ]);
+        $this->set(compact('energyLog'));
     }
 
     /**
-     * @return void
+     * Add method
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
-    public function add(): void
+    public function add()
     {
-        $this->request->allowMethod(['post']);
-
         $energyLog = $this->EnergyLogs->newEmptyEntity();
-        $energyLog = $this->EnergyLogs->patchEntity($energyLog, $this->request->getData());
+        if ($this->request->is('post')) {
+            $energyLog = $this->EnergyLogs->patchEntity($energyLog, $this->request->getData());
+            if ($this->EnergyLogs->save($energyLog)) {
+                $this->Flash->success(__('The energy log has been saved.'));
 
-        if ($this->EnergyLogs->save($energyLog)) {
-            $this->renderJson([
-                'status' => 'success',
-                'message' => 'Energy log created successfully.',
-                'energyLog' => $energyLog,
-            ], 201);
-
-            return;
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The energy log could not be saved. Please, try again.'));
         }
+        $devices = $this->EnergyLogs->Devices->find('list', limit: 200)->all();
+        $this->set(compact('energyLog', 'devices'));
 
-        $this->renderJson([
-            'status' => 'error',
-            'message' => 'Unable to create energy log.',
-            'errors' => $energyLog->getErrors(),
-        ], 422);
+        $this->viewBuilder()->setClassName('Json');
     }
 
     /**
-     * @param string|null $id Energy log id.
-     * @return void
+     * Edit method
+     *
+     * @param string|null $id Energy Log id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function edit($id = null): void
+    public function edit($id = null)
     {
-        $this->request->allowMethod(['patch', 'post', 'put']);
+        $energyLog = $this->EnergyLogs->get($id, contain: []);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $energyLog = $this->EnergyLogs->patchEntity($energyLog, $this->request->getData());
+            if ($this->EnergyLogs->save($energyLog)) {
+                $this->Flash->success(__('The energy log has been saved.'));
 
-        $energyLog = $this->EnergyLogs->get($id);
-        $energyLog = $this->EnergyLogs->patchEntity($energyLog, $this->request->getData());
-
-        if ($this->EnergyLogs->save($energyLog)) {
-            $this->renderJson([
-                'status' => 'success',
-                'message' => 'Energy log updated successfully.',
-                'energyLog' => $energyLog,
-            ]);
-
-            return;
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The energy log could not be saved. Please, try again.'));
         }
-
-        $this->renderJson([
-            'status' => 'error',
-            'message' => 'Unable to update energy log.',
-            'errors' => $energyLog->getErrors(),
-        ], 422);
+        $devices = $this->EnergyLogs->Devices->find('list', limit: 200)->all();
+        $this->set(compact('energyLog', 'devices'));
     }
 
     /**
-     * @param string|null $id Energy log id.
-     * @return void
+     * Delete method
+     *
+     * @param string|null $id Energy Log id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($id = null): void
+    public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
-
         $energyLog = $this->EnergyLogs->get($id);
         if ($this->EnergyLogs->delete($energyLog)) {
-            $this->renderJson([
-                'status' => 'success',
-                'message' => 'The energy log has been deleted.',
-            ]);
-
-            return;
+            $this->Flash->success(__('The energy log has been deleted.'));
+        } else {
+            $this->Flash->error(__('The energy log could not be deleted. Please, try again.'));
         }
 
-        $this->renderJson([
-            'status' => 'error',
-            'message' => 'The energy log could not be deleted.',
-        ], 422);
+        return $this->redirect(['action' => 'index']);
     }
 }

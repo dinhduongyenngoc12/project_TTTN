@@ -16,11 +16,6 @@ declare(strict_types=1);
  */
 namespace App;
 
-use App\Middleware\HostHeaderMiddleware;
-use Authentication\AuthenticationService;
-use Authentication\AuthenticationServiceInterface;
-use Authentication\AuthenticationServiceProviderInterface;
-use Authentication\Middleware\AuthenticationMiddleware;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -33,7 +28,13 @@ use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
-
+use Cake\Utility\Security;
+use Authentication\AuthenticationService;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Identifier\PasswordIdentifier;
+use Psr\Http\Message\ServerRequestInterface;
 /**
  * Application setup class.
  *
@@ -42,7 +43,8 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  *
  * @extends \Cake\Http\BaseApplication<\App\Application>
  */
-class Application extends BaseApplication implements AuthenticationServiceProviderInterface
+class Application extends BaseApplication
+implements AuthenticationServiceProviderInterface
 {
     /**
      * Load all the application configuration and bootstrap logic.
@@ -56,9 +58,6 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         // By default, does not allow fallback classes.
         FactoryLocator::add('Table', (new TableLocator())->allowFallbackClass(false));
-
-        //plugin authen
-        $this->addPlugin('Authentication');
     }
 
     /**
@@ -69,15 +68,19 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
+        $csrf = new CsrfProtectionMiddleware();
+
+            // Token check will be skipped when callback returns `true`.
+            $csrf->skipCheckCallback(function ($request) {
+                // Skip token check for API URLs.
+                if ($request->getParam('prefix') === 'Api') {
+                    return true;
+                }
+            });
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
-
-            // Validate Host header to prevent Host Header Injection attacks.
-            // In production, ensures App.fullBaseUrl is configured and validates
-            // the incoming Host header against it.
-            ->add(new HostHeaderMiddleware())
 
             // Handle plugin/theme assets like CakePHP normally does.
             ->add(new AssetMiddleware([
@@ -95,47 +98,49 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // https://book.cakephp.org/5/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
-            // Authenticate requests using session and form login.
-            ->add(new AuthenticationMiddleware($this))
-
-            // Cross Site Request Forgery (CSRF) Protection Middleware
+            // Token check will be skipped when callback returns `true`.
+            // CSRF: skipCheckCallback must be set via ->skipCheckCallback(), not the constructor array
+            // (constructor only merges known keys into $_config; the callback property stays null otherwise).
             // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            //->add(new CsrfProtectionMiddleware([
-            //    'httponly' => true,
-            //]))
-            ;
+            // Ensure routing middleware is added to the queue before CSRF protection middleware.
+            // ->add($csrf)
+            // Đảm bảo AuthenticationMiddleware nằm SAU RoutingMiddleware
+         ->add(new \Authentication\Middleware\AuthenticationMiddleware($this));
 
         return $middlewareQueue;
     }
 
     /**
-     * Get authentication service.
-     *
-     * @param \Psr\Http\Message\ServerRequestInterface $request The request.
+     * @param \Psr\Http\Message\ServerRequestInterface $request Request instance.
      * @return \Authentication\AuthenticationServiceInterface
      */
-    public function getAuthenticationService(
-        \Psr\Http\Message\ServerRequestInterface $request,
-    ): AuthenticationServiceInterface {
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
         $service = new AuthenticationService([
-            'unauthenticatedRedirect' => '/login',
-            'queryParam' => 'redirect',
-        ]);
-
-        $service->loadAuthenticator('Authentication.Session');
-        $service->loadAuthenticator('Authentication.Form', [
-            'identifier' => [
-                'className' => 'Authentication.Password',
-                'fields' => [
-                    'username' => 'username',
-                    'password' => 'password',
+            'unauthenticatedRedirect' => null,
+            'identifiers' => [
+                'Authentication.Password' => [
+                    'fields' => [
+                        'username' => 'email',
+                        'password' => 'password',
+                    ],
                 ],
             ],
+        ]);
+
+        // Form login
+        $service->loadAuthenticator('Authentication.Form', [
             'fields' => [
-                'username' => 'username',
+                'username' => 'email',
                 'password' => 'password',
             ],
-            'loginUrl' => '/login',
+            'loginUrl' => '/api/auth/login',
+        ]);
+
+        $service->loadAuthenticator('Authentication.Jwt', [
+            'header' => 'Authorization',
+            'tokenPrefix' => 'Bearer',
+            'secretKey' => (string)env('JWT_SECRET') ?: 'f0d65a288e711cbab967d407bb821e849d13ae02a250bb9456768092171ca90614c0012f8ad41b474fe5849ca9aa999e69bee27283383a2fd2b540512be33649',
         ]);
 
         return $service;

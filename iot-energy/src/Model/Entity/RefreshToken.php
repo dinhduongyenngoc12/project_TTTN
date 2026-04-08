@@ -3,29 +3,23 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
-use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\ORM\Entity;
 
 /**
- * User Entity
+ * RefreshToken Entity
  *
  * @property int $id
- * @property string|null $username
- * @property string|null $password
- * @property string|null $role
+ * @property int $user_id
+ * @property string $token
+ * @property \Cake\I18n\DateTime $expires_at
+ * @property bool $is_revoked
+ * @property \Cake\I18n\DateTime|null $created_at
+ * @property \Cake\I18n\DateTime|null $last_used_at
  *
- * @property \App\Model\Entity\Device[] $devices
+ * @property \App\Model\Entity\User $user
  */
-class User extends Entity
+class RefreshToken extends Entity
 {
-    protected function _setPassword(string $password)
-    {
-        //$hasher = new DefaultPasswordHasher();
-        //return $hasher->hash($password);
-        $hasher = new DefaultPasswordHasher;
-        return $hasher->hash($password);
-    }
-    
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -36,11 +30,13 @@ class User extends Entity
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        "id"=> true,
-        'username' => true,
-        'password' => true,
-        'role' => true,
-        'email' => true,
+        'user_id' => true,
+        'token' => true,
+        'expires_at' => true,
+        'is_revoked' => true,
+        'created_at' => true,
+        'last_used_at' => true,
+        'user' => true,
     ];
 
     /**
@@ -49,6 +45,6 @@ class User extends Entity
      * @var array<string>
      */
     protected array $_hidden = [
-        'password',
+        'token',
     ];
 }
