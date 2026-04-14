@@ -16,12 +16,12 @@ class TokenService
 {
     protected string $secretKey;
     protected string $algorithm = 'HS256';
-    protected int $expiresIn = 3600;
-    protected int $refreshTokenExpiresIn = 604800; //7ngay
+    protected int $expiresIn = 86400;
+    protected int $refreshTokenExpiresIn = 86400; //s
 
     public function __construct()
     {
-        $this->secretKey = (string)env('JWT_SECRET') ?: 'f0d65a288e711cbab967d407bb821e849d13ae02a250bb9456768092171ca90614c0012f8ad41b474fe5849ca9aa999e69bee27283383a2fd2b540512be33649';
+        $this->secretKey = (string)env('JWT_SECRET');
     
         // if ($this->secretKey === '') {
         //     throw new RuntimeException('JWT_SECRET is not configured.');
@@ -64,7 +64,7 @@ class TokenService
         $entity = $refreshTokenTable->newEntity([
             'user_id' => $userId,
             'token' => $refreshToken,
-            'expires_at' => FrozenTime::now()->addDays(3),
+            'expires_at' => FrozenTime::now()->addSeconds(30),
             'is_revoked' => false,
         ]);
         

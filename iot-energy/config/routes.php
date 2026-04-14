@@ -11,6 +11,7 @@ return function (RouteBuilder $routes): void {
 
         $builder->scope('/auth', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
             $builder->connect('/register', ['controller' => 'Users', 'action' => 'register']);
+            $builder->connect('/checkOTP', ['controller' => 'Users', 'action' => 'checkOTP']);
             $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
             $builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
         });

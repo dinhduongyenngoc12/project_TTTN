@@ -72,6 +72,11 @@ class DevicesTable extends Table
         $validator
             ->integer('user_id')
             ->allowEmptyString('user_id');
+        
+        $validator
+            ->scalar('photo_path')
+            ->maxLength('photo_path', 255)
+            ->allowEmptyString('photo_path');
 
         return $validator;
     }

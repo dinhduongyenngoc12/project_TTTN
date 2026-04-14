@@ -31,6 +31,7 @@ class Device extends Entity
         'name' => true,
         'user_id' => true,
         'user' => true,
+        'photo_path'=> true,
         'energy_logs' => true,
         'thresholds' => true,
     ];

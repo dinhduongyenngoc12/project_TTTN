@@ -59,7 +59,7 @@ class AppController extends Controller
      * @param array<string, mixed> $data Response data.
      * @param int $status HTTP status code.
      * @return \Cake\Http\Response
-     */
+     */ 
     protected function renderJson(array $data, int $status = 200): Response
     {
         $this->set($data);
@@ -71,20 +71,20 @@ class AppController extends Controller
     }
 
     protected function success(array $data = [], string $message = 'Success', int $status = 200)
-{
-    return $this->renderJson([
-        'status' => 'success',
-        'message' => $message,
-        'data' => $data
-    ], $status);
-}
+    {
+        return $this->renderJson([
+            'status' => 'success',
+            'message' => $message,
+            'data' => $data
+        ], $status);
+    }
 
 protected function error(string $message = 'Error', array $errors = [], int $status = 400)
-{
-    return $this->renderJson([
-        'status' => 'error',
-        'message' => $message,
-        'errors' => $errors
-    ], $status);
-}
+    {
+        return $this->renderJson([
+            'status' => 'error',
+            'message' => $message,
+            'errors' => $errors
+        ], $status);
+    }
 }

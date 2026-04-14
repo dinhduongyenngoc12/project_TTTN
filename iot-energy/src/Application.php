@@ -35,6 +35,9 @@ use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Identifier\PasswordIdentifier;
 use Psr\Http\Message\ServerRequestInterface;
+
+use function Cake\Error\dd;
+
 /**
  * Application setup class.
  *
@@ -136,11 +139,10 @@ implements AuthenticationServiceProviderInterface
             ],
             'loginUrl' => '/api/auth/login',
         ]);
-
         $service->loadAuthenticator('Authentication.Jwt', [
             'header' => 'Authorization',
             'tokenPrefix' => 'Bearer',
-            'secretKey' => (string)env('JWT_SECRET') ?: 'f0d65a288e711cbab967d407bb821e849d13ae02a250bb9456768092171ca90614c0012f8ad41b474fe5849ca9aa999e69bee27283383a2fd2b540512be33649',
+            'secretKey' => (string)env('JWT_SECRET'),
         ]);
 
         return $service;

@@ -218,16 +218,32 @@ return [
      * You can add custom transports (or override existing transports) by adding the
      * appropriate file to src/Mailer/Transport. Transports should be named
      * 'YourTransport.php', where 'Your' is the name of the transport.
-     */
+    //  */
     'EmailTransport' => [
         'default' => [
-            'className' => MailTransport::class,
+            // 'className' => MailTransport::class,
+            // /*
+            //  * The keys host, port, timeout, username, password, client and tls
+            //  * are used in SMTP transports
+            //  */
+            // 'host' => 'sandbox.smtp.mailtrap.io',
+            // 'port' => 2525,
+            // 'timeout' => 30,
+            // /*
+            //  * It is recommended to set these options through your environment or app_local.php
+            //  */
+            // //'username' => null,
+            // //'password' => null,
+            // 'client' => null,
+            // 'tls' => true,
+            // 'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
+                 'className' => MailTransport::class,
             /*
              * The keys host, port, timeout, username, password, client and tls
              * are used in SMTP transports
              */
-            'host' => 'localhost',
-            'port' => 25,
+            'host' => 'ssl://mail.teamsolutions.vn',
+            'port' => 465,
             'timeout' => 30,
             /*
              * It is recommended to set these options through your environment or app_local.php
@@ -252,7 +268,7 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => 'you@localhost',
+            // 'from' => 'you@localhost',
             /*
              * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
              */

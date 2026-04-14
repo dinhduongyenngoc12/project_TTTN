@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\DevicesService;
+
+use function Cake\Error\dd;
+
 /**
  * Devices Controller
  *
@@ -10,49 +14,63 @@ namespace App\Controller;
  */
 class DevicesController extends AppController
 {
+    protected DevicesService $devicesService;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->devicesService = new DevicesService();
+    }
+
     /**
      * @return void
      */
     public function index(): void
     {
-        $devices = $this->paginate(
-            $this->Devices->find()->contain(['Users']),
-        );
+        try {
+            $query = $this->devicesService->getList()->orderBy(['Devices.id' => 'DESC']);
+            $devices = $this->paginate($query, [
+            'limit' => 10,
+            'sortableFields' => ['id', 'name', 'user_id', 'photo_path'], ]);
 
-        $this->renderJson([
+            $pagingData = $devices->pagingParams();
+            $this->renderJson([
             'status' => 'success',
+            'message' => 'Lay danh sach thiet bi thanh cong',
             'devices' => $devices,
-        ]);
+            'pagingData' => $pagingData,]);
+
+        } catch (\Throwable $th) {
+            $this->renderJson([
+            'status' => 'error',
+            'message' => 'Trang ban yeu cau khong co du lieu hoac vuot qua so trang hien co',
+            'devices' => [],
+            'pagingData' => []
+        ], 404);
+        }
     }
 
-    /**
-     * @param string|null $id Device id.
-     * @return void
-     */
     public function view($id = null): void
     {
-        $device = $this->Devices->get($id, contain: ['Users', 'EnergyLogs', 'Thresholds']);
+        $device = $this->devicesService->getById($id);
 
         $this->renderJson([
             'status' => 'success',
+            'message' => 'Lay chi tiet thiet bi thanh cong',
             'device' => $device,
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function add(): void
     {
         $this->request->allowMethod(['post']);
+        $result = $this->devicesService->create($this->request->getData());
+        $device = $result['device'];
 
-        $device = $this->Devices->newEmptyEntity();
-        $device = $this->Devices->patchEntity($device, $this->request->getData());
-
-        if ($this->Devices->save($device)) {
+        if ($result['saved']) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Device created successfully.',
+                'message' => 'Tao thiet bi thanh cong',
                 'device' => $device,
             ], 201);
 
@@ -61,26 +79,21 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to create device.',
+            'message' => 'Khong the tao thiet bi',
             'errors' => $device->getErrors(),
         ], 422);
     }
 
-    /**
-     * @param string|null $id Device id.
-     * @return void
-     */
     public function edit($id = null): void
     {
         $this->request->allowMethod(['patch', 'post', 'put']);
+        $result = $this->devicesService->update($id, $this->request->getData());
+        $device = $result['device'];
 
-        $device = $this->Devices->get($id);
-        $device = $this->Devices->patchEntity($device, $this->request->getData());
-
-        if ($this->Devices->save($device)) {
+        if ($result['saved']) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Device updated successfully.',
+                'message' => 'Cap nhat thiet bi thanh cong',
                 'device' => $device,
             ]);
 
@@ -89,24 +102,19 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to update device.',
+            'message' => 'Khong the cap nhat thiet bi',
             'errors' => $device->getErrors(),
         ], 422);
     }
 
-    /**
-     * @param string|null $id Device id.
-     * @return void
-     */
     public function delete($id = null): void
     {
         $this->request->allowMethod(['post', 'delete']);
 
-        $device = $this->Devices->get($id);
-        if ($this->Devices->delete($device)) {
+        if ($this->devicesService->remove($id)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'The device has been deleted.',
+                'message' => 'Xoa thiet bi thanh cong',
             ]);
 
             return;
@@ -114,7 +122,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'The device could not be deleted.',
+            'message' => 'Khong the xoa thiet bi',
         ], 422);
     }
 }
