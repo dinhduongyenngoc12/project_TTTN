@@ -27,6 +27,7 @@ class DevicesController extends AppController
      */
     public function index(): void
     {
+
         $this->request->allowMethod(['get', 'post']);
 
         try {
@@ -37,6 +38,7 @@ class DevicesController extends AppController
             $devices = $this->paginate($query, [
             'limit' => 10,
             'sortableFields' => ['id', 'name', 'user_id', 'photo_path'], ]);
+
 
             // $devicesList = [];
             // foreach ($devices as $de) {
@@ -57,12 +59,15 @@ class DevicesController extends AppController
                 // 'devices'=>$devicesList,
                 'pagingData'=>$pagingData,]);
 
+
         } catch (\Throwable $th) {
             $this->renderJson([
             'status' => 'error',
             'message' => 'Trang ban yeu cau khong co du lieu hoac vuot qua so trang hien co',
             'devices' => [],
+
             'pagingData' => []], 404);
+
         }
     }
 

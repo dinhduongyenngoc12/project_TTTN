@@ -17,7 +17,9 @@ return function (RouteBuilder $routes): void {
         });
 
         $builder->scope('/devices', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
-            $builder->connect('', ['controller' => 'Devices', 'action' => 'index','method'=>['get','post']]);
+
+        $builder->connect('', ['controller' => 'Devices', 'action' => 'index','method'=>['get','post']]);
+
         });
 
         $builder->scope('/energy-logs', ['prefix' => 'Api'], function (RouteBuilder $builder): void {

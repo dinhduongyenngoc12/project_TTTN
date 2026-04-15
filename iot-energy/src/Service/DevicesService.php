@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Model\Table\DevicesTable;
+
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 
 use function Cake\Error\dd;
+
 
 class DevicesService
 {
@@ -18,6 +20,7 @@ class DevicesService
         $devicesTable = TableRegistry::getTableLocator()->get('Devices');
         $this->Devices = $devicesTable;
     }
+
 
     public function getList(?string $keyword = null): SelectQuery
     {
@@ -39,6 +42,7 @@ class DevicesService
         }
         
         return $query;
+
     }
 
     public function getById($id = null)
@@ -52,7 +56,9 @@ class DevicesService
             return null;
         }
 
+
         $folder = WWW_ROOT.'uploads/devices/';
+
 
         if (!is_dir($folder)) {            //is_dir: check ton tai ?
             mkdir($folder);

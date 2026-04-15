@@ -55,6 +55,7 @@ public function login(): void
             'otp'=> $otp,
             'created_at'=> FrozenTime::now(),
             'expires_at'=> FrozenTime::now()->addDays(3),
+
         ]);
 
         $tableOtp->save($dataOtp);
