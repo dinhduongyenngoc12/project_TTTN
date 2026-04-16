@@ -19,18 +19,6 @@ class DevicesTableTest extends TestCase
     protected $Devices;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.Devices',
-        'app.Users',
-        'app.EnergyLogs',
-        'app.Thresholds',
-    ];
-
-    /**
      * setUp method
      *
      * @return void

@@ -7,6 +7,8 @@ use App\Controller\AppController;
 use App\Model\Table\UserOtpsTable;
 use Cake\Event\EventInterface;
 use Firebase\JWT\JWT;
+use App\Provider\AuthSocialProvider;
+use App\Service\SocialCallbackService;
 use App\Service\TokenService;
 use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
@@ -21,28 +23,60 @@ class UsersController extends AppController
         $this ->loadComponent("Comon");
     }
 
-    
-    /**
-     * @param \Cake\Event\EventInterface $event Event instance.
-     * @return void
-     */
     public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login','register','checkOTP']);
+        $this->Authentication->addUnauthenticatedActions(['login','register','checkOTP','socialLogin','socialCallback']);
         //truy cap ma khong can dang nhap - UnAuthen
     }
 
-public function login(): void
-{
-    $this->request->allowMethod(['post']);
+    public function socialLogin(string $provider)
+    {
+        $providerAction = new AuthSocialProvider();
+        $authUrl = $providerAction->execute($provider, $this->request->getSession());
 
-    $result = $this->Authentication->getResult();
+        return $this->redirect($authUrl);
+    }
+    
 
-    $otp = $this->Comon->randomOTP();
-   
-    if ($result?->isValid()) {
-        $user = $this->Authentication->getIdentity();
+    public function socialCallback(string $provider)
+    {
+        $code  = $this->request->getQuery('code');
+        $state = $this->request->getQuery('state');
+
+        if (!$code) {
+            $this->Flash->error('Dang nhap that bai.');
+            return $this->redirect(['action' => 'login']);
+        }
+
+        try {
+            $callbackAction = new SocialCallbackService();
+            $userData = $callbackAction->execute($provider, $code, $state, $this->request->getSession());
+
+            // Tìm hoặc tạo user trong DB
+            $user = $this->fetchTable('Users')->findOrCreateSocialUser($userData);
+
+            $this->request->getSession()->write('Auth.User', $user);
+            $this->Flash->success(" {$userData['name']}!");
+
+            return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
+
+        } catch (\Exception $e) {
+            $this->Flash->error('ERROR: ' . $e->getMessage());
+            return $this->redirect(['action' => 'login']);
+        }
+    }
+
+    public function login(): void
+    {
+        $this->request->allowMethod(['post']);
+
+        $otp = $this->Comon->randomOTP();
+    
+        $result = $this->Authentication->getResult();
+    
+        if ($result?->isValid()) {
+            $user = $this->Authentication->getIdentity();
      
         // $tokenService = new TokenService();
         // $token = $tokenService->createToken($user);
@@ -55,7 +89,6 @@ public function login(): void
             'otp'=> $otp,
             'created_at'=> FrozenTime::now(),
             'expires_at'=> FrozenTime::now()->addDays(3),
-
         ]);
 
         $tableOtp->save($dataOtp);
@@ -80,6 +113,8 @@ public function login(): void
     ], 401);
     }
 
+    
+
     public function checkOTP(){
         $this->request->allowMethod(['post']);
 
@@ -100,7 +135,7 @@ public function login(): void
         $otpRecord = $userOtpTable->find()->where([
             'email' => $email,
             'otp' => $otp,
-            'created_at <' => FrozenTime::now()
+            'expires_at >' => FrozenTime::now()
         ])
         ->first();
 
@@ -143,20 +178,29 @@ public function login(): void
             return $this->error('Validation failed', $user->getErrors(), 422);
         }
 
-        if($this->Users->find()->where(['username'=> $user->username])->first()){
+        if ($this->Users->find()->where(['username' => $user->username])->first()) {
             $this->renderJson([
-            'status' => 'error',
-            'message' => 'User da ton tai, vui long kiem tra lai User !!!'],409);
+                'status' => 'error',
+                'message' => 'Username da ton tai, vui long kiem tra lai User !!!',
+            ], 409);
+            return;
+        }
+
+        if ($this->Users->find()->where(['email' => $user->email])->first()) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Email da ton tai, vui long kiem tra lai Email !!!',
+            ], 409);
             return;
         }
 
         if(!$this->Users->save($user)) {
-            return $this->error('Khong the tao User', [], 500);
+            return $this->error('Khong the tao User', $user->getErrors(), 422);
         }
 
         return $this->success([
             'id'=>$user->id,
-            'email' => $user->email
+            'email' => $user->email,
         ], 'Dang ky thanh cong');
     }
 

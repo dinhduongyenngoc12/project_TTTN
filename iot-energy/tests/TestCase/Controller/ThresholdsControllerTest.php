@@ -17,16 +17,6 @@ class ThresholdsControllerTest extends TestCase
     use IntegrationTestTrait;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.Thresholds',
-        'app.Devices',
-    ];
-
-    /**
      * Test index method
      *
      * @return void

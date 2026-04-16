@@ -19,16 +19,6 @@ class RefreshTokensTableTest extends TestCase
     protected $RefreshTokens;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.RefreshTokens',
-        'app.Users',
-    ];
-
-    /**
      * setUp method
      *
      * @return void

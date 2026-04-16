@@ -19,16 +19,6 @@ class EnergyLogsTableTest extends TestCase
     protected $EnergyLogs;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.EnergyLogs',
-        'app.Devices',
-    ];
-
-    /**
      * setUp method
      *
      * @return void

@@ -14,6 +14,11 @@ return function (RouteBuilder $routes): void {
             $builder->connect('/checkOTP', ['controller' => 'Users', 'action' => 'checkOTP']);
             $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
             $builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
+            $builder->connect(
+                '/social/google',
+                ['controller' => 'Users', 'action' => 'socialLogin', 'provider' => 'google'],
+                ['pass' => ['provider']]
+            );
         });
 
         $builder->scope('/devices', ['prefix' => 'Api'], function (RouteBuilder $builder): void {

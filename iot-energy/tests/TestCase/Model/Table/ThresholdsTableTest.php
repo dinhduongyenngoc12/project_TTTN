@@ -19,16 +19,6 @@ class ThresholdsTableTest extends TestCase
     protected $Thresholds;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.Thresholds',
-        'app.Devices',
-    ];
-
-    /**
      * setUp method
      *
      * @return void

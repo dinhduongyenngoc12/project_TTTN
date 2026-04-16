@@ -56,9 +56,7 @@ class DevicesService
             return null;
         }
 
-
         $folder = WWW_ROOT.'uploads/devices/';
-
 
         if (!is_dir($folder)) {            //is_dir: check ton tai ?
             mkdir($folder);
@@ -69,7 +67,6 @@ class DevicesService
 
         return 'uploads/devices/' . $fileName;
     }
-
 
     public function create(array $data): array
     {

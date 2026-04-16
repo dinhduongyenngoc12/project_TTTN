@@ -17,18 +17,6 @@ class DevicesControllerTest extends TestCase
     use IntegrationTestTrait;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.Devices',
-        'app.Users',
-        'app.EnergyLogs',
-        'app.Thresholds',
-    ];
-
-    /**
      * Test index method
      *
      * @return void

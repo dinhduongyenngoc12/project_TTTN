@@ -17,16 +17,6 @@ class EnergyLogsControllerTest extends TestCase
     use IntegrationTestTrait;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.EnergyLogs',
-        'app.Devices',
-    ];
-
-    /**
      * Test index method
      *
      * @return void

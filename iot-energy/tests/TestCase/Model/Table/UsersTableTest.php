@@ -19,16 +19,6 @@ class UsersTableTest extends TestCase
     protected $Users;
 
     /**
-     * Fixtures
-     *
-     * @var array<string>
-     */
-    protected array $fixtures = [
-        'app.Users',
-        'app.Devices',
-    ];
-
-    /**
      * setUp method
      *
      * @return void

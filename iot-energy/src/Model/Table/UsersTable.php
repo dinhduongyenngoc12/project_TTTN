@@ -46,6 +46,11 @@ class UsersTable extends Table
         $this->hasMany('Devices', [
             'foreignKey' => 'user_id',
         ]);
+
+        $this->hasMany('UserSocialAccounts', [
+        'foreignKey' => 'user_id',
+    ]);
+
     }
 
     /**
@@ -60,6 +65,13 @@ class UsersTable extends Table
             ->scalar('username')
             ->maxLength('username', 50)
             ->allowEmptyString('username');
+
+        $validator
+            ->scalar('email')
+            ->maxLength('email', 255)
+            ->email('email')
+            ->requirePresence('email', 'create')
+            ->notEmptyString('email');
 
         $validator
             ->scalar('password')
@@ -84,6 +96,7 @@ class UsersTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['username']), ['errorField' => 'username']);
+        $rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
 
         return $rules;
     }
