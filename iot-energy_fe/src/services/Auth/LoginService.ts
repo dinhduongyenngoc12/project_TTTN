@@ -7,4 +7,9 @@ const axiosClient = axios.create({
     },
 });
 
+export const loginApi = async (payload: { email: string; password: string }) => {
+    const response = await axiosClient.post("/auth/login", payload);
+    return response.data;
+};
+
 export default axiosClient;

@@ -1,6 +1,14 @@
-/** @type {import('next').NextConfig} */
+// next.config.mjs
 const nextConfig = {
-  /* config options here */
-};
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/Login',
+        permanent: false,
+      },
+    ]
+  },
+}
 
-export default nextConfig;
+export default nextConfig
