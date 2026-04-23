@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -14,6 +15,7 @@ declare(strict_types=1);
  * @since     3.3.0
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App;
 
 use Cake\Core\Configure;
@@ -34,7 +36,10 @@ use Authentication\Middleware\AuthenticationMiddleware;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Identifier\PasswordIdentifier;
+use Cake\Http\Response;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 use function Cake\Error\dd;
 
@@ -73,42 +78,50 @@ implements AuthenticationServiceProviderInterface
     {
         $csrf = new CsrfProtectionMiddleware();
 
-            // Token check will be skipped when callback returns `true`.
-            $csrf->skipCheckCallback(function ($request) {
-                // Skip token check for API URLs.
-                if ($request->getParam('prefix') === 'Api') {
-                    return true;
-                }
-            });
+        $csrf->skipCheckCallback(function ($request) {
+            if ($request->getParam('prefix') === 'Api') {
+                return true;
+            }
+            return false;
+        });
+
         $middlewareQueue
-            // Catch any exceptions in the lower layers,
-            // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 
-            // Handle plugin/theme assets like CakePHP normally does.
             ->add(new AssetMiddleware([
                 'cacheTime' => Configure::read('Asset.cacheTime'),
             ]))
 
-            // Add routing middleware.
-            // If you have a large number of routes connected, turning on routes
-            // caching in production could improve performance.
-            // See https://github.com/CakeDC/cakephp-cached-routing
             ->add(new RoutingMiddleware($this))
 
-            // Parse various types of encoded request bodies so that they are
-            // available as array through $request->getData()
-            // https://book.cakephp.org/5/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
-            // Token check will be skipped when callback returns `true`.
-            // CSRF: skipCheckCallback must be set via ->skipCheckCallback(), not the constructor array
-            // (constructor only merges known keys into $_config; the callback property stays null otherwise).
-            // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            // Ensure routing middleware is added to the queue before CSRF protection middleware.
-            // ->add($csrf)
-            // Đảm bảo AuthenticationMiddleware nằm SAU RoutingMiddleware
-         ->add(new \Authentication\Middleware\AuthenticationMiddleware($this));
+            // CORS middleware
+            ->add(function (
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ): ResponseInterface {
+                $origin = 'http://localhost:5173';
+
+                if ($request->getMethod() === 'OPTIONS') {
+                    return (new Response())
+                        ->withStatus(200)
+                        ->withHeader('Access-Control-Allow-Origin', $origin)
+                        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+                        ->withHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+                        ->withHeader('Access-Control-Allow-Credentials', 'true');
+                }
+
+                $response = $handler->handle($request);
+
+                return $response
+                    ->withHeader('Access-Control-Allow-Origin', $origin)
+                    ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+                    ->withHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+                    ->withHeader('Access-Control-Allow-Credentials', 'true');
+            })
+
+            ->add(new \Authentication\Middleware\AuthenticationMiddleware($this));
 
         return $middlewareQueue;
     }

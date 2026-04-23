@@ -69,7 +69,7 @@ class UsersController extends AppController
 
     public function login(): void
     {
-        $this->request->allowMethod(['post']);
+   
 
         $otp = $this->Comon->randomOTP();
     
@@ -110,7 +110,7 @@ class UsersController extends AppController
     $this->renderJson([
         'status' => 'error',
         'message' => 'Invalid email or password',
-    ], 401);
+    ], 200);
     }
 
     
@@ -125,7 +125,7 @@ class UsersController extends AppController
              return $this->renderJson([
                 'status' => 'error',
                 'message' => 'Thieu email hoac otp',
-        ], 400);
+        ], 200);
         //tra token 
         }
         $userOtpTable = TableRegistry::getTableLocator()->get('UserOtps');
@@ -159,6 +159,7 @@ class UsersController extends AppController
         $this->renderJson([
             'status' => 'success',
             'message' => 'OTP xac thuc thanh cong',
+            'user' => $dataUser,
             'token' => $token,
             'refresh' => $refresh
         ]);

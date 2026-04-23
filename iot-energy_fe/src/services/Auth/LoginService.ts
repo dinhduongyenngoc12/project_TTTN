@@ -7,8 +7,11 @@ const axiosClient = axios.create({
     },
 });
 
-export const loginApi = async (payload: { email: string; password: string }) => {
-    const response = await axiosClient.post("/auth/login", payload);
+export const loginApi = async (
+    data: { email: string; password: string
+    
+}) => {
+    const response = await axiosClient.post("api/auth/login", data);
     return response.data;
 };
 
