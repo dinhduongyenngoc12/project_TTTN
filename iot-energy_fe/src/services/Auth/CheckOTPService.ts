@@ -1,5 +1,6 @@
 // services/Auth/CheckOtpService.ts
 import axios from "axios";
+import { check_otpAPI } from "../../features/constants/api";
 
 export type CheckOTPData = {
     email: string;
@@ -15,6 +16,6 @@ export type CheckOTPResponse = {
 
 export const checkOTPApi = async (
     data: CheckOTPData ): Promise<CheckOTPResponse> => {
-        const response = await axios.post("http://localhost:8765/api/auth/checkOTP", data);
+        const response = await axios.post(check_otpAPI, data);
     return response.data;
 };

@@ -1,11 +1,17 @@
-import { useAuthLoginStore } from "../app/store/useAuthStore";
+import { useAuthLoginStore, useOtpData } from "../app/store/useAuthStore";
 import { Navigate } from "react-router-dom";
 
-export default function PublicRoute({ children }: {children: React.ReactNode}) {
+export default function PublicRoute({ children }: { children: React.ReactNode }) {
     const token = useAuthLoginStore((state) => state.token);
+    const otpEmail = useOtpData((state) => state.email);
+
     if (token) {
-        return <Navigate to="/home" replace />;
+        return <Navigate to="/" replace />;
     }
 
-    return <>{children}</>
+    if (!token && otpEmail) {
+        return <Navigate to="/otp" replace />;
+    }
+
+    return <>{children}</>;
 }

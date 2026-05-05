@@ -1,10 +1,11 @@
 // services/Auth/RegisterService.ts
 import axios from "axios";
+import { registerAPI } from "../../features/constants/api";
 
 export const registerApi = async (
         data: { username: string; email: string; password: string
 }) => {
-    const response = await axios.post("http://localhost:8765/api/auth/register", data);
+    const response = await axios.post(registerAPI, data);
     return response.data;
 }
 

@@ -12,27 +12,31 @@ export const router = createBrowserRouter([
     path: "/",
     element:
       <ProtectedRoute>
-        <HomePage />,
+        <HomePage />
       </ProtectedRoute>
   },
+
   {
     path: "/login",
     element:
       <PublicRoute>
-        <LoginPage />,
+        <LoginPage />
       </PublicRoute>
   },
+
   {
     path: "/register",
-    element: 
-    <RegisterPage />,
+    element:
+      <PublicRoute>
+        <RegisterPage />
+      </PublicRoute>
   },
 
   {
     path: "/otp",
     element:
       <OtpGuard>
-        <OTPPage />,
+        <OTPPage />
       </OtpGuard>
   },
 

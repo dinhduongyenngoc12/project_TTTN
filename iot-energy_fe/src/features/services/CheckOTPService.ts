@@ -11,7 +11,12 @@ export type CheckOTPResponse = {
     message: string;
     token: string;
     refresh: string;
+    user: {
+        username: string;
+        email: string;
+    };
 };
+
 
 export const otpApi = async (
     data: CheckOTPData ): Promise<CheckOTPResponse> => {

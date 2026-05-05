@@ -1,31 +1,45 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
  
+
 //LOGIN
 type LoginProps = {
     token: string | null;
-    username: any;
-    setAuthLogin: (data: { token: string; username: any }) => void;
+    username: string | null;
+    email: string | null;
+    setAuthLogin: (data: { token: string; username: string; email: string }) => void;
     clearAuthLogin: () => void;
 };
 
-export const useAuthLoginStore = create<LoginProps>((set) => ({
-    token: null,
-    username: null,
-
-    setAuthLogin: (data) =>
-        set({
-            token: data.token,
-            username: data.username,
-        }),
-
-    clearAuthLogin: () =>
-        set({
+export const useAuthLoginStore = create<LoginProps>()(
+    persist(                     //Persistence (luu tru trang thai) reload trang se khong bi da ve /login
+        (set) => ({
             token: null,
             username: null,
+            email: null,
+
+            setAuthLogin: (data) =>
+                set({
+                    token: data.token,
+                    username: data.username,
+                    email: data.email,
+                }),
+
+            clearAuthLogin: () =>
+                set({
+                    token: null,
+                    username: null,
+                    email: null,
+                }),
         }),
-}));
+        {
+            name: "AUTH_LOGIN",
+        }
+    )
+);
+
  
+
 //OTP EMAIL
 type OtpProps = {
     email: string;
@@ -54,6 +68,7 @@ export const useOtpData = create<OtpProps>()(
     )
 );
 
+
 //OTP VERIFY RESULT
 type OTPState = {
     otp: string | null;
@@ -75,6 +90,7 @@ type OTPState = {
     clearUserIdentify: () => void;
 };
 
+
 export const useAuthOTPStore = create<OTPState>((set) => ({
     otp: null, email: null, status: null, message: null, token: null, refresh: null,
 
@@ -93,6 +109,7 @@ export const useAuthOTPStore = create<OTPState>((set) => ({
             otp: null, email: null, status: null, message: null, token: null, refresh: null
         }),
 }));
+
 
 //REFRESH TOKEN
 type RefreshTokenState = {

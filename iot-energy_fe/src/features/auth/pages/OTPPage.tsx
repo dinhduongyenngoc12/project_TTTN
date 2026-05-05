@@ -1,7 +1,7 @@
 import { useState} from "react";
 import { Input } from "../../shared/components/Input";
 import { Button } from "../../shared/components/Button";
-import { useOTPForm } from "../hooks/useAuthForm";
+import { useOTPForm, useLogoutForm } from "../hooks/useAuthForm";
 import { useLocation} from "react-router-dom";
 import { useOtpData } from "../../../app/store/useAuthStore";
 
@@ -10,8 +10,8 @@ const illustrationUrl =
 
 export default function OTPPage() {
     const [otp, setOTP] = useState("");
-    const location = useLocation();   //lay dl tu page truoc
-    //const navigate = useNavigate();   //chuyen page
+    const location = useLocation();             //lay dl tu page truoc
+    //const navigate = useNavigate();           //chuyen page
     const storeEmail = useOtpData((state) => state.email);
     //const setOTPData = useOtpData((state) => state.setOTPData);
     const emailState = location.state?.email;
@@ -50,7 +50,7 @@ export default function OTPPage() {
                         <div className="mt-8 w-full flex-1">
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                    Please enter the OTP with Electrical energy management system E-mail
+                                    Vui lòng nhập mã OTP được nhận từ email vào Hệ thống Quản lý Năng lượng điện tại đây.
                                 </div>
                             </div>
                             <div>{msg}</div>
@@ -63,7 +63,7 @@ export default function OTPPage() {
                                     placeholder={'OTP'}
                                 />
 
-                                <Button title="Submit" disabled={isPending}/>
+                                <Button title="XÁC NHẬN" disabled={isPending}/>
                             </form>
                         </div>
                     </div>

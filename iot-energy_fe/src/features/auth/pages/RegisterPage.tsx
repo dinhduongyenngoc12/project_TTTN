@@ -11,7 +11,7 @@ export default function RegisterPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const { handleRegister } = useRegisterForm();
+    const { handleRegister, isPending } = useRegisterForm();
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
@@ -31,34 +31,33 @@ export default function RegisterPage() {
                         <div className="mt-8 w-full flex-1">
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                    Sign Up with Electrical energy management system E-mail
+                                    ĐĂNG KÍ TÀI KHOẢN 
                                 </div>
                             </div>
 
                             <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <Input
-                                    type={'username'}
-                                    name={'username'}
+                                    type="username"
+                                    name="username"
                                     onChange={(event) => setUsername(event.target.value)}
-                                    placeholder={'Username'}
-
+                                    placeholder="Username"
                                 />
+
                                 <Input
-                                    type={'email'}
-                                    name={'email'}
+                                    type="email"
+                                    name="email"
                                     onChange={(event) => setEmail(event.target.value)}
-                                    placeholder={'Email'}
-
+                                    placeholder="Email"
                                 />
+
                                 <Input
-                                    type={'password'}
-                                    name={'password'}
+                                    type="password"
+                                    name="password"
                                     onChange={(event) => setPassword(event.target.value)}
-                                    placeholder={'Password'}
+                                    placeholder="Password"
                                 />
 
-                                <Button title="Sign up" />
-
+                                <Button title="ĐĂNG KÍ" disabled={isPending} />
                             </form>
                         </div>
                     </div>
@@ -69,12 +68,8 @@ export default function RegisterPage() {
                         className="m-12 w-full bg-contain bg-center bg-no-repeat xl:m-16"
                         style={{ backgroundImage: `url("${illustrationUrl}")` }}
                     />
-                    <div className="flex min-h-screen justify-center bg-gray-100 px-4 py-6 text-gray-900 sm:px-6 sm:py-10">
-                        <h1 className="text-2xl font-bold">SIGN UP</h1>
-                    </div>
                 </div>
             </div>
         </div>
     );
 }
-

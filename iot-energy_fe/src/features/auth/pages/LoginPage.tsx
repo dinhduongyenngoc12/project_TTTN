@@ -3,7 +3,8 @@ import { Button } from "../../shared/components/Button";
 import { Input } from "../../shared/components/Input";
 import { useLoginForm } from "../hooks/useAuthForm";
 import { ButtonSocial } from "../../shared/components/ButtonSocial";
-import { useOtpData } from "../../../app/store/useAuthStore";
+//import { useOtpData } from "../../../app/store/useAuthStore";
+import { Link } from "react-router-dom";
 
 
 const illustrationUrl =
@@ -13,7 +14,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const { handleLogin, isPending } = useLoginForm();
+    const { handleLogin, isPending, msg } = useLoginForm();
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
@@ -24,7 +25,7 @@ export default function LoginPage() {
 
         });
     };
-console.log('token')
+    console.log('token')
 
     // const clearOtpData = useOtpData((state) => state.clearOtpData);
     // useEffect(() => {
@@ -43,7 +44,7 @@ console.log('token')
 
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                    Or sign in with Electrical energy management system E-mail
+                                   hoặc ĐĂNG NHẬP bằng Email cho Hệ thống Quản lý Năng lượng điện. 
                                 </div>
                             </div>
 
@@ -63,9 +64,29 @@ console.log('token')
                                 />
 
 
-                                <Button title="Login" disabled={isPending} />
+                                <Button title="ĐĂNG NHẬP" disabled={isPending} />
+                                {msg && (
+                                    <p
+                                        className={`mt-3 text-center text-sm ${msg.includes("THÀNH CÔNG")
+                                                ? "text-green-600"
+                                                : "text-red-500"
+                                            }`}
+                                    >
+                                        {msg}
+                                    </p>
+                                )}
 
-                                <p className="mt-6 text-center text-xs text-gray-600">
+                                <p className="mt-5 text-center text-sm text-gray-600">
+                                    Chưa có tài khoản?{" "}
+                                    <Link
+                                        to="/register"
+                                        className="font-semibold text-green-600 hover:text-green-700 hover:underline"
+                                    >
+                                        Đăng ký
+                                    </Link>
+                                </p>
+
+                                {/* <p className="mt-6 text-center text-xs text-gray-600">
                                     I agree to abide by electrical energy management system{" "}
                                     <a
                                         href="#"
@@ -81,7 +102,7 @@ console.log('token')
                                         Privacy Policy
                                     </a>
                                     .
-                                </p>
+                                </p> */}
                             </form>
                         </div>
                     </div>

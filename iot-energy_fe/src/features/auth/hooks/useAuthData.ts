@@ -27,7 +27,7 @@ export function useOTPData() {
     const mutation = useMutation({
         mutationFn: otpApi,
         onSuccess: (data, variable) => {
-            if(data?.status === "success"){
+            if (data?.status === "success") {
                 setUserIdentify({
                     status: data.status,
                     message: data.message,
@@ -37,9 +37,11 @@ export function useOTPData() {
                     email: variable.email
                 });
                 setAuthLogin({
-                    token:data.token,
-                    username: variable.email,
+                    token: data.token,
+                    username: data.user.username,
+                    email: data.user.email,
                 });
+
                 setRefreshToken(data.refresh);
             }
         },
@@ -56,11 +58,14 @@ export function useOTPData() {
 //REGISTER
 export function useRegisterData() {
     const mutation = useMutation({
-        mutationFn: registerApi
+        mutationFn: registerApi,
     });
 
     return {
-        mutation
+        mutation,
+        isPending: mutation.isPending,
+        error: mutation.error,
+        data: mutation.data,
     };
 }
 

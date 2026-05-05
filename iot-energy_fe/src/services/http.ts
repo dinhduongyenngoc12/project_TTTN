@@ -1,3 +1,4 @@
+//import type { DevicesResponse, EnergyLogsResponse } from "../features/services/HomeService";
 import { axiosClient } from "../lib/axiosClient";
 
 //GET
@@ -29,3 +30,13 @@ export async function deleteData<T>(url: string): Promise<T> {
     const response = await axiosClient.post<T>(url);
     return response.data;
 }
+
+// export async function getDevicesApi(): Promise<DevicesResponse> {
+//     const response = await getData<DevicesResponse>("/api/devices");
+//     return response.data;
+// }
+
+// export async function getEnergyLogsApi(): Promise<EnergyLogsResponse> {
+//     const response = await getData<EnergyLogsResponse>("/api/energy-logs");
+//     return response.data;
+// }

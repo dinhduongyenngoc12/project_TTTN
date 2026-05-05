@@ -1,6 +1,6 @@
 const socialButtonPreset = {
     type: "button",
-    text: "Sign In with Google",
+    text: "ĐĂNG NHẬP bằng Google",
     className:
         "flex w-full max-w-xs items-center justify-center rounded-lg bg-green-100 py-3 font-bold text-gray-800 shadow-sm transition-all duration-300 ease-in-out hover:shadow focus:outline-none focus:shadow-sm",
     iconWrapperClassName: "rounded-full bg-white p-2",

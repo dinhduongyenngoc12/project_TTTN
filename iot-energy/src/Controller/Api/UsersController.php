@@ -69,8 +69,6 @@ class UsersController extends AppController
 
     public function login(): void
     {
-   
-
         $otp = $this->Comon->randomOTP();
     
         $result = $this->Authentication->getResult();
@@ -88,7 +86,7 @@ class UsersController extends AppController
             'email' => $user->email,
             'otp'=> $otp,
             'created_at'=> FrozenTime::now(),
-            'expires_at'=> FrozenTime::now()->addDays(3),
+            'expires_at'=> FrozenTime::now()->addMinutes(5),
         ]);
 
         $tableOtp->save($dataOtp);
@@ -112,8 +110,6 @@ class UsersController extends AppController
         'message' => 'Invalid email or password',
     ], 200);
     }
-
-    
 
     public function checkOTP(){
         $this->request->allowMethod(['post']);
@@ -159,14 +155,16 @@ class UsersController extends AppController
         $this->renderJson([
             'status' => 'success',
             'message' => 'OTP xac thuc thanh cong',
-            'user' => $dataUser,
+            'user' => [
+                'username' => $dataUser->username,
+                'email' => $dataUser->email,
+            ],
             'token' => $token,
             'refresh' => $refresh
         ]);
         return;
 
     }
-    
 
     public function register()
     {
