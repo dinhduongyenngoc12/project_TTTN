@@ -38,7 +38,6 @@ export const useAuthLoginStore = create<LoginProps>()(
     )
 );
 
- 
 
 //OTP EMAIL
 type OtpProps = {

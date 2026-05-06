@@ -3,6 +3,8 @@ import { loginApi } from "../../services/LoginService";
 import { useAuthLoginStore, useAuthOTPStore, useRefreshTokenStore } from "../../../app/store/useAuthStore";
 import { registerApi } from "../../services/RegisterService";
 import { otpApi } from "../../services/CheckOTPService";
+import { resendOtpApi } from "../../services/ResendOTPService";
+
 
 //LOGIN
 export function useLoginData() {
@@ -54,6 +56,21 @@ export function useOTPData() {
         data: mutation.data,
     };
 }
+
+//RESEND_OTP
+export function useResendOTPData() {
+    const mutation = useMutation({
+        mutationFn: resendOtpApi,
+    });
+
+    return {
+        mutation,
+        isPending: mutation.isPending,
+        error: mutation.error,
+        data: mutation.data,
+    };
+}
+
 
 //REGISTER
 export function useRegisterData() {

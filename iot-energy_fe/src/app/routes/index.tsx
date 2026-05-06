@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import LoginPage from "../../features/auth/pages/LoginPage";
 import HomePage from "../../features/main/pages/HomePage";
+import DevicePage from "../../features/main/pages/DevicePage";
 import RegisterPage from "../../features/auth/pages/RegisterPage";
 import OTPPage from "../../features/auth/pages/OTPPage";
 import PublicRoute from "../../guard/PublicRoute";
@@ -15,6 +16,15 @@ export const router = createBrowserRouter([
         <HomePage />
       </ProtectedRoute>
   },
+
+  {
+    path: "/devices",
+    element:
+      <ProtectedRoute>
+        <DevicePage />
+      </ProtectedRoute>
+  },
+
 
   {
     path: "/login",

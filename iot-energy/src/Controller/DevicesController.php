@@ -53,7 +53,7 @@ class DevicesController extends AppController
             $pagingData = $devices->pagingParams();
             $this->renderJson([
                 'status'=>'success',
-                'message'=>'Lay danh sach thiet bi thanh cong',
+                'message'=>'Lấy danh sách thiết bị thành công',
                 'keyword'=>$keyword,
                 'devices'=>$devices,
                 // 'devices'=>$devicesList,
@@ -63,7 +63,7 @@ class DevicesController extends AppController
         } catch (\Throwable $th) {
             $this->renderJson([
             'status' => 'error',
-            'message' => 'Trang ban yeu cau khong co du lieu hoac vuot qua so trang hien co',
+            'message' => 'Trang bạn yêu cầu không có dữ liệu hoặc vượt quá số trang hiện có',
             'devices' => [],
 
             'pagingData' => []], 404);
@@ -77,7 +77,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'success',
-            'message' => 'Lay chi tiet thiet bi thanh cong',
+            'message' => 'Lấy chi tiết thiết bị thành công',
             'device' => $device,
         ]);
     }
@@ -91,7 +91,7 @@ class DevicesController extends AppController
         if ($result['saved']) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Tao thiet bi thanh cong',
+                'message' => 'Tạo mới thiết bị thành công',
                 'device' => $device,
             ], 201);
 
@@ -100,7 +100,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Khong the tao thiet bi',
+            'message' => 'Không thể tạo thiết bị',
             'errors' => $device->getErrors(),
         ], 422);
     }
@@ -114,7 +114,7 @@ class DevicesController extends AppController
         if ($result['saved']) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Cap nhat thiet bi thanh cong',
+                'message' => 'Cập nhật thiết bị thành công',
                 'device' => $device,
             ]);
 
@@ -123,7 +123,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Khong the cap nhat thiet bi',
+            'message' => 'Không thể cập nhật thiết bị',
             'errors' => $device->getErrors(),
         ], 422);
     }
@@ -135,7 +135,7 @@ class DevicesController extends AppController
         if ($this->devicesService->remove($id)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Xoa thiet bi thanh cong',
+                'message' => 'Xoá thiết bị thành công',
             ]);
 
             return;
@@ -143,7 +143,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Khong the xoa thiet bi',
+            'message' => 'Không thể xoá thiết bị',
         ], 422);
     }
 }

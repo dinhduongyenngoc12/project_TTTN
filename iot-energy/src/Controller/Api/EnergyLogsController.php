@@ -17,12 +17,51 @@ class EnergyLogsController extends AppController
      */
     public function index(): void
     {
-        $energyLogs = $this->paginate(
-            $this->EnergyLogs->find()->contain(['Devices']),
-        );
+        $this->request->allowMethod(['get']);
+
+        $userId = $this->getAuthenticatedUserId();
+        $deviceId = $this->request->getQuery('device_id');
+        $from = trim((string)$this->request->getQuery('from', ''));
+        $to = trim((string)$this->request->getQuery('to', ''));
+
+        $query = $this->EnergyLogs->find()
+            ->contain(['Devices'])             //load
+            ->orderBy([
+                'EnergyLogs.created_at' => 'DESC',
+                'EnergyLogs.id' => 'DESC',
+            ]);
+
+        if ($userId !== null) {
+            $query->innerJoinWith('Devices', function ($q) use ($userId) {
+                return $q->where(['Devices.user_id' => $userId]);
+            });
+        }
+
+        if (is_numeric($deviceId)) {
+            $query->where(['EnergyLogs.device_id' => (int)$deviceId]);
+        }
+
+        if ($from !== '') {
+            $query->where([
+                'EnergyLogs.created_at >=' => $this->normalizeDateBoundary($from, false),         //chuan hoa ngay bat dau 00:00:00
+            ]);
+        }
+
+        if ($to !== '') {
+            $query->where([
+                'EnergyLogs.created_at <=' => $this->normalizeDateBoundary($to, true)             //chuan hoa ngay bat dau 23:59:59
+            ]);
+        }
+
+        $energyLogs = $query->all()->toList();
 
         $this->renderJson([
             'status' => 'success',
+            'filters' => [
+                'device_id' => is_numeric($deviceId) ? (int)$deviceId : null,
+                'from' => $from !== '' ? $from : null,
+                'to' => $to !== '' ? $to : null,
+            ],
             'energyLogs' => $energyLogs,
         ]);
     }
@@ -54,7 +93,7 @@ class EnergyLogsController extends AppController
         if ($this->EnergyLogs->save($energyLog)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Energy log created successfully.',
+                'message' => 'Nhật ký năng lượng đã được tạo thành công.',
                 'energyLog' => $energyLog,
             ], 201);
 
@@ -63,7 +102,7 @@ class EnergyLogsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to create energy log.',
+            'message' => 'Không thể tạo nhật ký năng lượng',
             'errors' => $energyLog->getErrors(),
         ], 422);
     }
@@ -82,7 +121,7 @@ class EnergyLogsController extends AppController
         if ($this->EnergyLogs->save($energyLog)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Energy log updated successfully.',
+                'message' => 'Nhật ký năng lượng đã được cập nhật thành công.',
                 'energyLog' => $energyLog,
             ]);
 
@@ -91,7 +130,7 @@ class EnergyLogsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to update energy log.',
+            'message' => 'Không thể cập nhật nhật ký năng lượng',
             'errors' => $energyLog->getErrors(),
         ], 422);
     }
@@ -108,7 +147,7 @@ class EnergyLogsController extends AppController
         if ($this->EnergyLogs->delete($energyLog)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'The energy log has been deleted.',
+                'message' => 'Nhật ký năng lượng đã được xoá thành công.',
             ]);
 
             return;
@@ -116,7 +155,16 @@ class EnergyLogsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'The energy log could not be deleted.',
+            'message' => 'Không thể xoá nhật ký năng lượng.',
         ], 422);
+    }
+
+    private function normalizeDateBoundary(string $value, bool $isEndOfDay): string
+    {
+        if (strlen($value) === 10) {
+            return $value . ($isEndOfDay ? ' 23:59:59' : ' 00:00:00');
+        }
+
+        return $value;
     }
 }

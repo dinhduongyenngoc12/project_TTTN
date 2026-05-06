@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "../../shared/components/Button";
 import { Input } from "../../shared/components/Input";
 import { useLoginForm } from "../hooks/useAuthForm";
 import { ButtonSocial } from "../../shared/components/ButtonSocial";
 //import { useOtpData } from "../../../app/store/useAuthStore";
 import { Link } from "react-router-dom";
-
 
 const illustrationUrl =
     "https://drive.google.com/uc?export=view&id=1KZ_Ub_2lZ0dHbKV0fAIhxVhiQA183RCz";
@@ -25,7 +24,7 @@ export default function LoginPage() {
 
         });
     };
-    console.log('token')
+    console.log("token");
 
     // const clearOtpData = useOtpData((state) => state.clearOtpData);
     // useEffect(() => {
@@ -44,23 +43,23 @@ export default function LoginPage() {
 
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                   hoặc ĐĂNG NHẬP bằng Email cho Hệ thống Quản lý Năng lượng điện. 
+                                    hoặc Đăng nhập bằng Email cho Hệ thống Quản lý Năng lượng điện.
                                 </div>
                             </div>
 
                             <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <Input
-                                    type={'email'}
-                                    name={'email'}
+                                    type={"email"}
+                                    name={"email"}
                                     onChange={(event) => setEmail(event.target.value)}
-                                    placeholder={'Email'}
+                                    placeholder={"Email"}
 
                                 />
                                 <Input
-                                    type={'password'}
-                                    name={'password'}
+                                    type={"password"}
+                                    name={"password"}
                                     onChange={(event) => setPassword(event.target.value)}
-                                    placeholder={'Password'}
+                                    placeholder={"Mật khẩu"}
                                 />
 
 

@@ -64,7 +64,7 @@ class TokenService
         $entity = $refreshTokenTable->newEntity([
             'user_id' => $userId,
             'token' => $refreshToken,
-            'expires_at' => FrozenTime::now()->addSeconds(30),
+            'expires_at' => FrozenTime::now()->addSeconds($this->refreshTokenExpiresIn),
             'is_revoked' => false,
         ]);
         

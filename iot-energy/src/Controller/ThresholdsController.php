@@ -52,7 +52,7 @@ class ThresholdsController extends AppController
         if ($this->Thresholds->save($threshold)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Threshold created successfully.',
+                'message' => 'Tạo ngưỡng tiêu thụ thành công',
                 'threshold' => $threshold,
             ], 201);
 
@@ -61,7 +61,7 @@ class ThresholdsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to create threshold.',
+            'message' => 'Không thể tạo ngưỡng tiêu thụ',
             'errors' => $threshold->getErrors(),
         ], 422);
     }
@@ -80,7 +80,7 @@ class ThresholdsController extends AppController
         if ($this->Thresholds->save($threshold)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'Threshold updated successfully.',
+                'message' => 'Ngưỡng tiêu thụ đã được cập nhật thành công',
                 'threshold' => $threshold,
             ]);
 
@@ -89,7 +89,7 @@ class ThresholdsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'Unable to update threshold.',
+            'message' => 'Không thể cập nhật ngưỡng tiêu thụ',
             'errors' => $threshold->getErrors(),
         ], 422);
     }
@@ -106,7 +106,7 @@ class ThresholdsController extends AppController
         if ($this->Thresholds->delete($threshold)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'The threshold has been deleted.',
+                'message' => 'Đã xoá ngưỡng tiêu thụ',
             ]);
 
             return;
@@ -114,7 +114,7 @@ class ThresholdsController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'The threshold could not be deleted.',
+            'message' => 'Không thể xoá ngưỡng tiêu thụ này',
         ], 422);
     }
 }

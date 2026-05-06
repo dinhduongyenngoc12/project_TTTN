@@ -4,30 +4,34 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
-use App\Model\Table\UserOtpsTable;
-use Cake\Event\EventInterface;
-use Firebase\JWT\JWT;
 use App\Provider\AuthSocialProvider;
 use App\Service\SocialCallbackService;
 use App\Service\TokenService;
+use Cake\Event\EventInterface;
 use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
-
-use function Cake\Error\dd;
 
 class UsersController extends AppController
 {
     public function initialize(): void
     {
-        parent::initialize();   
-        $this ->loadComponent("Comon");
+        parent::initialize();
+        $this->loadComponent('Comon');
     }
 
     public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login','register','checkOTP','socialLogin','socialCallback']);
-        //truy cap ma khong can dang nhap - UnAuthen
+
+        $this->Authentication->addUnauthenticatedActions([                      //Authentication middleware/component: khong can login van duoc phep goi
+            'login',
+            'register',
+            'checkOTP',
+            'socialLogin',
+            'socialCallback',
+            'resendOTP',
+            'refresh',
+        ]);
     }
 
     public function socialLogin(string $provider)
@@ -37,15 +41,16 @@ class UsersController extends AppController
 
         return $this->redirect($authUrl);
     }
-    
 
+    //SOCIAL_LOGIN            CHƯA DONE
     public function socialCallback(string $provider)
     {
-        $code  = $this->request->getQuery('code');
+        $code = $this->request->getQuery('code');
         $state = $this->request->getQuery('state');
 
         if (!$code) {
-            $this->Flash->error('Dang nhap that bai.');
+            $this->Flash->error('Đăng nhập thất bại');
+
             return $this->redirect(['action' => 'login']);
         }
 
@@ -53,100 +58,101 @@ class UsersController extends AppController
             $callbackAction = new SocialCallbackService();
             $userData = $callbackAction->execute($provider, $code, $state, $this->request->getSession());
 
-            // Tìm hoặc tạo user trong DB
             $user = $this->fetchTable('Users')->findOrCreateSocialUser($userData);
 
             $this->request->getSession()->write('Auth.User', $user);
             $this->Flash->success(" {$userData['name']}!");
 
             return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
-
         } catch (\Exception $e) {
             $this->Flash->error('ERROR: ' . $e->getMessage());
+
             return $this->redirect(['action' => 'login']);
         }
     }
 
+    //LOGIN
     public function login(): void
     {
         $otp = $this->Comon->randomOTP();
-    
         $result = $this->Authentication->getResult();
-    
+
         if ($result?->isValid()) {
             $user = $this->Authentication->getIdentity();
-     
-        // $tokenService = new TokenService();
-        // $token = $tokenService->createToken($user);
-        // $refresh = $tokenService->createRefreshToken($user);     =>>Token se duoc tao khi checkOtp true
 
-        $this->Comon->sendOTP($otp, $user->email);
-        $tableOtp = $this->fetchTable('UserOtps');
-        $dataOtp= $tableOtp->newEntity([
-            'email' => $user->email,
-            'otp'=> $otp,
-            'created_at'=> FrozenTime::now(),
-            'expires_at'=> FrozenTime::now()->addMinutes(5),
-        ]);
+            $this->Comon->sendOTP($otp, $user->email);
 
-        $tableOtp->save($dataOtp);
+            $tableOtp = $this->fetchTable('UserOtps');
+            $dataOtp = $tableOtp->newEntity([
+                'email' => $user->email,
+                'otp' => $otp,
+                'created_at' => FrozenTime::now(),
+                'expires_at' => FrozenTime::now()->addMinutes(5),      //han otp
+            ]);
+
+            $tableOtp->save($dataOtp);
+
+            $this->renderJson([
+                'status' => 'success',
+                'message' => 'OTP',
+                'email' => $user->email,
+                'otp' => $otp,
+            ]);
+
+            return;
+        }
 
         $this->renderJson([
-            // 'status' => 'success',
-            // 'message' => 'Login successful.',
-            // 'token' => $token,
-            // 'refresh'=> $refresh
-            
-                'status' => 'success',
-                'message' => 'OTP created',
-                'email' => $user->email,
-                'otp' => $otp   //sau nay se khong cho OTP xuat o day
-        ]);
-        return;
+            'status' => 'error',
+            'message' => 'Email hoặc mật khẩu không hợp lệ !',
+        ], 200);
     }
 
-    $this->renderJson([
-        'status' => 'error',
-        'message' => 'Invalid email or password',
-    ], 200);
-    }
-
-    public function checkOTP(){
+    //CHECK_OTP
+    public function checkOTP(): void
+    {
         $this->request->allowMethod(['post']);
 
         $email = $this->request->getData('email');
         $otp = $this->request->getData('otp');
 
-        if(empty($email) || empty($otp)) {
-             return $this->renderJson([
+        if (empty($email) || empty($otp)) {
+            $this->renderJson([
                 'status' => 'error',
-                'message' => 'Thieu email hoac otp',
-        ], 200);
-        //tra token 
+                'message' => 'Thiếu email hoặc mật khẩu',
+            ], 200);
+
+            return;
         }
+
         $userOtpTable = TableRegistry::getTableLocator()->get('UserOtps');
-        $userTable = TableRegistry::getTableLocator()->get('Users');
-
-
         $otpRecord = $userOtpTable->find()->where([
             'email' => $email,
             'otp' => $otp,
-            'expires_at >' => FrozenTime::now()
-        ])
-        ->first();
+            'expires_at >' => FrozenTime::now(),
+        ])->first();
 
-        if (empty($otpRecord)) {
+        if (!$otpRecord) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'OTP khong hop le hoac het han'
+                'message' => 'OTP không hợp lệ hoặc đã hết hạn',
             ]);
+
             return;
         }
 
         $dataUser = $this->fetchTable('Users')->find()->where([
-            'email' => $email
+            'email' => $email,
         ])->first();
-       
+
+        if (!$dataUser) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không tìm thấy User',
+            ], 404);
+
+            return;
+        }
 
         $tokenService = new TokenService();
         $token = $tokenService->createToken($dataUser);
@@ -154,24 +160,142 @@ class UsersController extends AppController
 
         $this->renderJson([
             'status' => 'success',
-            'message' => 'OTP xac thuc thanh cong',
+            'message' => 'OTP xác thực thành công',
             'user' => [
+                'id' => $dataUser->id,
                 'username' => $dataUser->username,
                 'email' => $dataUser->email,
+                'role' => $dataUser->role,
             ],
             'token' => $token,
-            'refresh' => $refresh
+            'refresh' => $refresh,
         ]);
-        return;
-
     }
 
+    //RESEND_OTP
+    public function resendOTP(): void
+    {
+        $this->request->allowMethod(['post']);
+
+        $email = $this->request->getData('email');
+
+        if (empty($email)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Thiếu Email',
+            ], 400);
+
+            return;
+        }
+
+        $user = $this->fetchTable('Users')->find()
+            ->where(['email' => $email])
+            ->first();
+
+        if (!$user) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Email không tồn tại',
+            ], 404);
+
+            return;
+        }
+
+        $otp = $this->Comon->randomOTP();
+        $this->Comon->sendOTP($otp, $email);
+
+        $tableOtp = $this->fetchTable('UserOtps');
+        $dataOtp = $tableOtp->newEntity([
+            'email' => $email,
+            'otp' => $otp,
+            'created_at' => FrozenTime::now(),
+            'expires_at' => FrozenTime::now()->addMinutes(5),
+        ]);
+
+        $tableOtp->save($dataOtp);
+
+        $this->renderJson([
+            'status' => 'success',
+            'message' => 'Đã gửi lại mã OTP',
+            'email' => $email,
+            'otp' => $otp,
+        ]);
+    }
+
+    //ME
+    public function me(): void
+    {
+        $this->request->allowMethod(['get']);
+
+        $userId = $this->getAuthenticatedUserId();               //user dang trong phien 
+        if ($userId === null) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không xác định được User hiện tại',
+            ], 401);
+
+            return;
+        }
+
+        $user = $this->fetchTable('Users')->find()
+            ->select(['id', 'username', 'email', 'role'])
+            ->where(['id' => $userId])
+            ->first();
+
+        if (!$user) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không tìm thấy User',
+            ], 404);
+
+            return;
+        }
+
+        $this->renderJson([
+            'status' => 'success',
+            'user' => $user,
+        ]);
+    }
+
+    //REFRESH
+    public function refresh(): void
+    {
+        $this->request->allowMethod(['post']);
+
+        $refreshToken = (string)$this->request->getData('refresh', '');
+        if ($refreshToken === '') {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Thiếu refresh token',
+            ], 400);
+
+            return;
+        }
+
+        try {
+            $tokenService = new TokenService();
+            $tokens = $tokenService->refresh($refreshToken);
+
+            $this->renderJson([
+                'status' => 'success',
+                'token' => $tokens['token'],
+                'refresh' => $tokens['refresh'],
+            ]);
+        } catch (\Throwable $th) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => $th->getMessage(),
+            ], 401);
+        }
+    }
+
+    //REGISTER
     public function register()
     {
         $this->request->allowMethod(['post']);
 
         $user = $this->Users->newEmptyEntity();
-        $user = $this->Users->patchEntity($user, $this->request->getData());    
+        $user = $this->Users->patchEntity($user, $this->request->getData());
 
         if ($user->getErrors()) {
             return $this->error('Validation failed', $user->getErrors(), 422);
@@ -180,34 +304,31 @@ class UsersController extends AppController
         if ($this->Users->find()->where(['username' => $user->username])->first()) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'Username da ton tai, vui long kiem tra lai User !!!',
+                'message' => 'Username đã tồn tại, Vui lòng kiểm tra lại User !',
             ], 409);
+
             return;
         }
 
         if ($this->Users->find()->where(['email' => $user->email])->first()) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'Email da ton tai, vui long kiem tra lai Email !!!',
+                'message' => 'Email đã tồn tại, Vui lòng kiểm tra lại Email',
             ], 409);
+
             return;
         }
 
-        if(!$this->Users->save($user)) {
-            return $this->error('Khong the tao User', $user->getErrors(), 422);
+        if (!$this->Users->save($user)) {
+            return $this->error('Không thể tạo User', $user->getErrors(), 422);
         }
 
         return $this->success([
-            'id'=>$user->id,
+            'id' => $user->id,
             'email' => $user->email,
-        ], 'Dang ky thanh cong');
+        ], 'Đăng ký thành công');
     }
 
-    /**
-     * Clear the current authenticated session.
-     *
-     * @return void
-     */
     public function logout(): void
     {
         $this->request->allowMethod(['post']);
@@ -215,7 +336,7 @@ class UsersController extends AppController
 
         $this->renderJson([
             'status' => 'success',
-            'message' => 'Logout successful',
+            'message' => 'Đăng xuất thành công',
         ]);
     }
 
@@ -227,7 +348,7 @@ class UsersController extends AppController
         if ($this->Users->delete($user)) {
             $this->renderJson([
                 'status' => 'success',
-                'message' => 'The user has been deleted',
+                'message' => 'Đã xoá User',
             ]);
 
             return;
@@ -235,7 +356,7 @@ class UsersController extends AppController
 
         $this->renderJson([
             'status' => 'error',
-            'message' => 'The user could not be deleted.',
+            'message' => 'Không thể xoá User này !',
         ], 422);
     }
 }

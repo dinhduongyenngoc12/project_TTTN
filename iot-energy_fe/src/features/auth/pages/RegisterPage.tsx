@@ -10,8 +10,7 @@ export default function RegisterPage() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
-    const { handleRegister, isPending } = useRegisterForm();
+    const { handleRegister, isPending, msg } = useRegisterForm();
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
@@ -31,7 +30,7 @@ export default function RegisterPage() {
                         <div className="mt-8 w-full flex-1">
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                    ĐĂNG KÍ TÀI KHOẢN 
+                                    ĐĂNG KÝ TÀI KHOẢN
                                 </div>
                             </div>
 
@@ -40,7 +39,7 @@ export default function RegisterPage() {
                                     type="username"
                                     name="username"
                                     onChange={(event) => setUsername(event.target.value)}
-                                    placeholder="Username"
+                                    placeholder="Tên đăng nhập"
                                 />
 
                                 <Input
@@ -54,10 +53,16 @@ export default function RegisterPage() {
                                     type="password"
                                     name="password"
                                     onChange={(event) => setPassword(event.target.value)}
-                                    placeholder="Password"
+                                    placeholder="Mật khẩu"
                                 />
 
-                                <Button title="ĐĂNG KÍ" disabled={isPending} />
+                                <Button title="ĐĂNG KÝ" disabled={isPending} />
+
+                                {msg && (
+                                    <p className="mt-3 text-center text-sm text-red-500">
+                                        {msg}
+                                    </p>
+                                )}
                             </form>
                         </div>
                     </div>

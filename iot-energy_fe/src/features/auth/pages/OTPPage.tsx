@@ -1,21 +1,13 @@
-import { useState} from "react";
+import { useState } from "react";
 import { Input } from "../../shared/components/Input";
 import { Button } from "../../shared/components/Button";
-import { useOTPForm, useLogoutForm } from "../hooks/useAuthForm";
-import { useLocation} from "react-router-dom";
-import { useOtpData } from "../../../app/store/useAuthStore";
+import { useOTPForm, useResendOTPForm } from "../hooks/useAuthForm";
 
 const illustrationUrl =
     "https://drive.google.com/uc?export=view&id=1KZ_Ub_2lZ0dHbKV0fAIhxVhiQA183RCz";
 
 export default function OTPPage() {
     const [otp, setOTP] = useState("");
-    const location = useLocation();             //lay dl tu page truoc
-    //const navigate = useNavigate();           //chuyen page
-    const storeEmail = useOtpData((state) => state.email);
-    //const setOTPData = useOtpData((state) => state.setOTPData);
-    const emailState = location.state?.email;
-    const email = emailState || storeEmail;
 
     // useEffect(() => {
     //     if (emailState) {
@@ -30,15 +22,15 @@ export default function OTPPage() {
     //         });
     //     }
     // }, []);                              thay = AUTH GUARD tai guard
-    
 
     const { handleOTP, msg, isPending } = useOTPForm();
+    const { handleResendOTP, isPending: isResending, msg: resendMsg } = useResendOTPForm();
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
 
         handleOTP({
-            otp
+            otp,
         });
     };
 
@@ -57,13 +49,32 @@ export default function OTPPage() {
                             <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
 
                                 <Input
-                                    type={'otp'}
-                                    name={'otp'}
+                                    type={"otp"}
+                                    name={"otp"}
                                     onChange={(event) => setOTP(event.target.value)}
-                                    placeholder={'OTP'}
+                                    placeholder={"Mã OTP"}
                                 />
 
-                                <Button title="XÁC NHẬN" disabled={isPending}/>
+                                <Button title="XÁC NHẬN" disabled={isPending} />
+                                <p className="mt-5 text-center text-sm text-gray-600">
+                                    Chưa nhận được mã OTP?
+                                </p>
+                                <Button
+                                    type="button"
+                                    title="Gửi lại mã"
+                                    disabled={isResending}
+                                    onClick={handleResendOTP}
+                                    className="mt-3 border border-green-500 bg-white text-green-600 hover:bg-green-50"
+                                    textClassName="text-green-600"
+
+                                />
+
+                                {resendMsg && (
+                                    <p className="mt-3 text-center text-sm text-green-600">
+                                        {resendMsg}
+                                    </p>
+                                )}
+
                             </form>
                         </div>
                     </div>

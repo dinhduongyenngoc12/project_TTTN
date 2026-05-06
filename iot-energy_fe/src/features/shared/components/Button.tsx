@@ -1,11 +1,12 @@
 import { cn } from "../utils/ultils";
 
-export function Button({ type = 'submit', title = '', className, textClassName, disabled = false }:
-    { type?: 'button' | 'submit' | 'reset' , title: string, className?: string, textClassName?: string, disabled?:boolean }) {
+export function Button({ type = 'submit', title = '', className, textClassName, disabled = false, onClick }:
+    { type?: 'button' | 'submit' | 'reset', title: string, className?: string, textClassName?: string, disabled?: boolean, onClick?:()=>void }) {
     return (
         <button type={type}
-                disabled={disabled} 
-                className={cn("mt-5 flex w-full items-center justify-center rounded-lg bg-green-400 py-4 font-semibold tracking-wide text-white transition-all duration-300 ease-in-out hover:bg-green-700 focus:outline-none",
+            disabled={disabled}
+            onClick={onClick}
+            className={cn("mt-5 flex w-full items-center justify-center rounded-lg bg-green-400 py-4 font-semibold tracking-wide text-white transition-all duration-300 ease-in-out hover:bg-green-700 focus:outline-none",
                 className ? className : '',
 
                 disabled

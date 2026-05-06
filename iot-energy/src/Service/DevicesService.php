@@ -22,21 +22,27 @@ class DevicesService
     }
 
 
-    public function getList(?string $keyword = null): SelectQuery
+    public function getList(?string $keyword = null, ?int $userId = null): SelectQuery
     {
-        $query = $this->Devices->find()->join([        //neu du dung find()->contain([BANG]): lay het du lieu cua Bang
-            'table'=> 'Users',
-            'alias'=> 'u',                          //dat ten bang
-            'type'=>'LEFT',                         //left join:lay het - inner join:chi lay phan chung
-            'conditions'=>'u.id=Devices.id',        //dieu kien join
-
+        $query = $this->Devices->find()->join([
+            'table'=> 'users',
+            'alias'=> 'u',
+            'type'=>'LEFT',
+            'conditions'=>'u.id = Devices.user_id',
         ]);
         $query->select([
+            'id' => 'Devices.id',
             'pk'=>'u.id',
-            'name',                  //neu de mac dinh la bang goc: Devices
-            'photo_path',
+            'name' => 'Devices.name',
+            'user_id' => 'Devices.user_id',
+            'photo_path' => 'Devices.photo_path',
             'username'=>'u.username',
         ]);
+
+        if ($userId !== null) {
+            $query->where(['Devices.user_id' => $userId]);
+        }
+
         if ($keyword !== null && $keyword !== '') {
             $query->where(['Devices.name LIKE' => '%'.trim($keyword).'%']);
         }

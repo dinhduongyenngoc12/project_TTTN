@@ -18,6 +18,7 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Http\Response;
+use ArrayAccess;
 
 /**
  * Application Controller
@@ -79,12 +80,58 @@ class AppController extends Controller
         ], $status);
     }
 
-protected function error(string $message = 'Error', array $errors = [], int $status = 400)
+    protected function error(string $message = 'Error', array $errors = [], int $status = 400)
     {
         return $this->renderJson([
             'status' => 'error',
             'message' => $message,
             'errors' => $errors
         ], $status);
+    }
+
+    protected function getAuthenticatedUserId(): ?int
+    {
+        $identity = $this->request->getAttribute('identity') ?? $this->Authentication->getIdentity();
+
+        $userId = $this->readIdentityValue($identity, 'id');
+        if ($userId === null) {
+            $userId = $this->readIdentityValue($identity, 'sub');
+        }
+
+        return is_numeric($userId) ? (int)$userId : null;
+    }
+
+    protected function readIdentityValue(mixed $identity, string $field): mixed
+    {
+        if ($identity === null) {
+            return null;
+        }
+
+        if (is_array($identity) && array_key_exists($field, $identity)) {
+            return $identity[$field];
+        }
+
+        if ($identity instanceof ArrayAccess && $identity->offsetExists($field)) {
+            return $identity[$field];
+        }
+
+        if (is_object($identity)) {
+            if (method_exists($identity, 'get')) {
+                $value = $identity->get($field);
+                if ($value !== null) {
+                    return $value;
+                }
+            }
+
+            if (isset($identity->{$field})) {
+                return $identity->{$field};
+            }
+
+            if (method_exists($identity, 'getOriginalData')) {
+                return $this->readIdentityValue($identity->getOriginalData(), $field);
+            }
+        }
+
+        return null;
     }
 }

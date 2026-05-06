@@ -35,7 +35,7 @@ function clearAllAuth() {
 }
 
 export function setupInterceptors() {
-    // REQUEST
+    //REQUEST
     axiosClient.interceptors.request.use(
         (config) => {
             const token = useAuthLoginStore.getState().token;
@@ -49,7 +49,7 @@ export function setupInterceptors() {
         (error) => Promise.reject(error)
     );
 
-    // RESPONSE
+    //RESPONSE
     axiosClient.interceptors.response.use(
         (response) => response,
         async (error: AxiosError) => {
@@ -75,14 +75,14 @@ export function setupInterceptors() {
                 return Promise.reject(error);
             }
 
-            // không refresh cho chính API refresh
+            //không refresh cho chính API refresh
             if (originalRequest.url?.includes("/auth/refresh")) {
                 clearAllAuth();
                 window.location.href = "/login";
                 return Promise.reject(error);
             }
 
-            // nếu đang refresh rồi thì xếp hàng chờ
+            //nếu đang refresh rồi thì xếp hàng chờ
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({
@@ -105,7 +105,7 @@ export function setupInterceptors() {
                     refresh: refreshToken,
                 });
 
-                // backend của bạn có thể trả token / refresh
+                //backend của bạn có thể trả token / refresh
                 const newToken = response.data?.token;
                 const newRefreshToken = response.data?.refresh ?? refreshToken;
 
@@ -113,14 +113,18 @@ export function setupInterceptors() {
                     throw new Error("Không lấy được token mới");
                 }
 
-                // cập nhật access token mới
+                //cập nhật access token mới
                 const currentUsername = useAuthLoginStore.getState().username;
-                useAuthLoginStore.getState().setAuthLogin({
+                const currentEmail = useAuthLoginStore.getState().email;
+
+                useAuthLoginStore.getState().setAuthLogin({                    //refresh chi doi access token
                     token: newToken,
-                    username: currentUsername,
+                    username: currentUsername ?? "",
+                    email: currentEmail ?? "",
                 });
 
-                // cập nhật refresh token mới nếu có
+
+                //cập nhật refresh token mới nếu có
                 useRefreshTokenStore.getState().setRefreshToken(newRefreshToken);
 
                 processQueue(null, newToken);

@@ -1,24 +1,41 @@
+import { isAxiosError } from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     useAuthLoginStore,
     useAuthOTPStore,
     useOtpData,
-    useRefreshTokenStore
+    useRefreshTokenStore,
 } from "../../../app/store/useAuthStore";
+import {
+    useLoginData,
+    useOTPData,
+    useRegisterData,
+    useResendOTPData,
+} from "./useAuthData";
 
-import { useLoginData, useOTPData, useRegisterData } from "./useAuthData";
-import { useNavigate } from "react-router-dom";
+type ApiErrorResponse = {
+    message?: string;
+    status?: string;
+};
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+    if (isAxiosError<ApiErrorResponse>(error)) {
+        return error.response?.data?.message || fallback;
+    }
+
+    return fallback;
+}
 
 export function useLoginForm() {
     const { mutation } = useLoginData();
     const navigate = useNavigate();
     const otpData = useOtpData();
-
     const [msg, setMsg] = useState("");
 
     const handleLogin = (
         { email, password }: { email: string; password: string },
-        options?: { onSuccess?: (data: any) => void }
+        options?: { onSuccess?: (data: any) => void },
     ) => {
         if (mutation.isPending) return;
 
@@ -43,11 +60,10 @@ export function useLoginForm() {
                         setMsg(data?.message || "ĐĂNG NHẬP THẤT BẠI");
                     }
                 },
-
-                onError: () => {
-                    setMsg("ĐĂNG NHẬP THẤT BẠI");
+                onError: (error) => {
+                    setMsg(getApiErrorMessage(error, "ĐĂNG NHẬP THẤT BẠI"));
                 },
-            }
+            },
         );
     };
 
@@ -64,15 +80,17 @@ export function useOTPForm() {
     const { mutation } = useOTPData();
     const otpData = useOtpData();
     const clearOtpData = useOtpData((state) => state.clearOtpData);
-
     const navigate = useNavigate();
-
     const [msg, setMsg] = useState("");
 
     const handleOTP = (
         { otp }: { otp: string },
-        options?: { onSuccess?: (data: any) => void }
+        options?: { onSuccess?: (data: any) => void },
     ) => {
+        if (mutation.isPending) return;
+
+        setMsg("");
+
         mutation.mutate(
             {
                 otp,
@@ -91,14 +109,13 @@ export function useOTPForm() {
                             replace: true,
                         });
                     } else {
-                        setMsg(data?.message || "OTP không hợp lệ");
+                        setMsg(data?.message || "OTP không hợp lệ hoặc hết hạn");
                     }
                 },
-
-                onError: () => {
-                    setMsg("OTP không hợp lệ hoặc đã hết hạn");
+                onError: (error) => {
+                    setMsg(getApiErrorMessage(error, "OTP không hợp lệ hoặc hết hạn"));
                 },
-            }
+            },
         );
     };
 
@@ -112,16 +129,54 @@ export function useOTPForm() {
     };
 }
 
+export function useResendOTPForm() {
+    const { mutation } = useResendOTPData();
+    const otpData = useOtpData();
+    const [msg, setMsg] = useState("");
+
+    const handleResendOTP = () => {
+        if (!otpData.email || mutation.isPending) return;
+
+        setMsg("");
+
+        mutation.mutate(
+            { email: otpData.email },
+            {
+                onSuccess: (data) => {
+                    if (data?.status === "success") {
+                        setMsg("Đã gửi lại mã OTP, vui lòng kiểm tra lại email.");
+                    } else {
+                        setMsg(data?.message || "Gửi lại mã OTP thất bại");
+                    }
+                },
+                onError: (error) => {
+                    setMsg(getApiErrorMessage(error, "Gửi lại mã OTP thất bại"));
+                },
+            },
+        );
+    };
+
+    return {
+        handleResendOTP,
+        isPending: mutation.isPending,
+        msg,
+    };
+}
 
 export function useRegisterForm() {
     const { mutation, isPending } = useRegisterData();
     const navigate = useNavigate();
+    const [msg, setMsg] = useState("");
 
     const handleRegister = ({ username, email, password }: {
         username: string;
         email: string;
         password: string;
     }) => {
+        if (mutation.isPending) return;
+
+        setMsg("");
+
         mutation.mutate(
             {
                 username,
@@ -132,8 +187,6 @@ export function useRegisterForm() {
                 onSuccess: (data) => {
                     console.log("Register success:", data);
 
-                    alert("ĐĂNG KÍ THÀNH CÔNG");
-
                     navigate("/login", {
                         replace: true,
                     });
@@ -141,29 +194,33 @@ export function useRegisterForm() {
                 onError: (error) => {
                     console.log("Register error:", error);
 
-                    alert("ĐĂNG KÍ THẤT BẠI");
+                    setMsg(
+                        getApiErrorMessage(
+                            error,
+                            "ĐĂNG KÝ THẤT BẠI, tên đăng nhập hoặc email đã tồn tại!",
+                        ),
+                    );
                 },
-            }
+            },
         );
     };
 
     return {
         handleRegister,
         isPending,
+        msg,
     };
 }
 
-
 export function useLogoutForm() {
     const navigate = useNavigate();
-
     const clearAuthLogin = useAuthLoginStore((state) => state.clearAuthLogin);
     const clearOtpData = useOtpData((state) => state.clearOtpData);
     const clearRefreshToken = useRefreshTokenStore((state) => state.clearRefreshToken);
     const clearUserIdentify = useAuthOTPStore((state) => state.clearUserIdentify);
 
     const handleLogout = () => {
-        const isConfirmed = window.confirm("BẠN CÓ CHẮC CHẮN MUỐN ĐĂNG XUẤT KHÔNG ?");
+        const isConfirmed = window.confirm("BAN CO CHAC CHAN MUON DANG XUAT KHONG?");
 
         if (!isConfirmed) {
             return;
@@ -183,4 +240,3 @@ export function useLogoutForm() {
         handleLogout,
     };
 }
-

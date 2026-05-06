@@ -15,19 +15,19 @@ export async function postData<T, B = unknown>(url: string, body?: B): Promise<T
 
 //PUT thay the toan bo
 export async function putData<T, B = unknown>(url: string, body?: B): Promise<T> {
-    const response = await axiosClient.post<T>(url, body);
+    const response = await axiosClient.put<T>(url, body);
     return response.data;
 }
 
 //PATCH cap nhat 1phan
 export async function patchData<T, B = unknown>(url: string, body?: B): Promise<T> {
-    const response = await axiosClient.post<T>(url, body);
+    const response = await axiosClient.patch<T>(url, body);
     return response.data;
 }
 
 //DELETE
 export async function deleteData<T>(url: string): Promise<T> {
-    const response = await axiosClient.post<T>(url);
+    const response = await axiosClient.delete<T>(url);
     return response.data;
 }
 
