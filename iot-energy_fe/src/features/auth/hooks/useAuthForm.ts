@@ -220,7 +220,7 @@ export function useLogoutForm() {
     const clearUserIdentify = useAuthOTPStore((state) => state.clearUserIdentify);
 
     const handleLogout = () => {
-        const isConfirmed = window.confirm("BAN CO CHAC CHAN MUON DANG XUAT KHONG?");
+        const isConfirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất không?");
 
         if (!isConfirmed) {
             return;

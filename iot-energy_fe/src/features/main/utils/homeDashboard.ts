@@ -107,7 +107,7 @@ export function formatPower(power: number | null): string {
         return "--";
     }
 
-    return '${Math.round(power)} W';  //lam tron
+    return Math.round(power) + " W";  //lam tron
 }
 
 export function formatDateTime(value: string | null): string {

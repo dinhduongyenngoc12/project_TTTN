@@ -111,7 +111,7 @@ export default function DevicePage() {
                         ))}
                     </nav>
 
-                       <nav className="mt-6 flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+                    <nav className="mt-6 flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
                         <button
                             type="button"
                             onClick={handleLogout}
@@ -120,18 +120,21 @@ export default function DevicePage() {
                         </button>
                     </nav>
                 </aside>
-
-                <div className="space-y-6">
+                <main className="flex-1">
                     <header className="rounded-[32px] border border-white/70 bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-900/10 sm:px-8">
-                        <p className="text-sm font-medium uppercase tracking-[0.26em] text-emerald-300">
-                            Thiết bị
-                        </p>
-                        <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
-                            Danh sách thiết bị của người dùng
-                        </h2>
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <p className="text-sm font-medium uppercase tracking-[0.26em] text-emerald-300">
+                                    Thiết bị
+                                </p>
+                                <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
+                                    Danh sách thiết bị của người dùng
+                                </h2>
+                            </div>
+                        </div>
                     </header>
 
-                    <section className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur">
+                    <section className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
                         {loading ? (
                             <p className="text-sm text-slate-500">Đang tải dữ liệu thiết bị...</p>
                         ) : error ? (
@@ -171,14 +174,10 @@ export default function DevicePage() {
                                 ))}
                             </div>
                         )}
+
                     </section>
-                </div>
-
-
+                </main>
             </div>
         </div>
-
     );
-
-
 }
