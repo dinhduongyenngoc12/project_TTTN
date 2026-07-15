@@ -7,30 +7,40 @@ use App\Controller\AppController;
 use App\Provider\AuthSocialProvider;
 use App\Service\SocialCallbackService;
 use App\Service\TokenService;
+use App\Service\MailService;
+
 use Cake\Event\EventInterface;
 use Cake\I18n\FrozenTime;
 use Cake\ORM\TableRegistry;
 
+/**
+ * @property \App\Model\Table\UsersTable $Users        //docblock giup tu hieu $this->Users la UsersTable
+ */
+
 class UsersController extends AppController
 {
+    protected MailService $mailService;
+
     public function initialize(): void
     {
         parent::initialize();
-        $this->loadComponent('Comon');         //load cpn
+        $this->mailService = new MailService();
     }
 
     public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
 
-        $this->Authentication->addUnauthenticatedActions([                      //Authentication middleware/component: khong can login van duoc phep goi
+        $this->Authentication->addUnauthenticatedActions([         //Authentication middleware/component: khong can login van duoc phep goi
             'login',
             'register',
             'checkOTP',
             'socialLogin',
             'socialCallback',
             'resendOTP',
-            'refresh'
+            'refresh',
+            'forgotPassword',
+            'resetPassword'
         ]);
     }
 
@@ -52,6 +62,7 @@ class UsersController extends AppController
         ]);
     }
 
+    //SOCIAL_LOGIN 
     public function socialLogin(string $provider)
     {
         $providerAction = new AuthSocialProvider();
@@ -60,7 +71,7 @@ class UsersController extends AppController
         return $this->redirect($authUrl);
     }
 
-    //SOCIAL_LOGIN            CHƯA DONE
+    //SOCIAL_LOGIN            
     public function socialCallback(string $provider)
     {
         $code = $this->request->getQuery('code');
@@ -76,6 +87,7 @@ class UsersController extends AppController
             $callbackAction = new SocialCallbackService();
             $userData = $callbackAction->execute($provider, $code, $state, $this->request->getSession());
 
+            //social acccount
             $user = $this->fetchTable('Users')->findOrCreateSocialUser($userData);
 
             $this->request->getSession()->write('Auth.User', $user);
@@ -97,14 +109,14 @@ class UsersController extends AppController
     //LOGIN
     public function login(): void
     {
-        $otp = $this->Comon->randomOTP();
+        $otp = $this->generateOtp();
+
         $result = $this->Authentication->getResult();
 
         if ($result?->isValid()) {
             $user = $this->Authentication->getIdentity();
 
-            //$this->Comon->sendOTP($otp, $user->email);
-            $mailSent = $this->Comon->sendOTP($otp, $user->email);
+            $mailSent = $this->mailService->sendOtp($otp, $user->email);
 
             if (!$mailSent) {
                 $this->renderJson([
@@ -117,7 +129,7 @@ class UsersController extends AppController
 
             $tableOtp = $this->fetchTable('UserOtps');
 
-            $tableOtp->deleteAll([                 //delete otp cu truoc khi save
+            $tableOtp->deleteAll([                 //DELETE OTP CŨ TRƯỚC KHI SAVE
                 'email' => $user->email,
             ]);
 
@@ -128,7 +140,17 @@ class UsersController extends AppController
                 'expires_at' => FrozenTime::now()->addMinutes(5),
             ]);
 
-            $tableOtp->save($dataOtp);
+            //save
+            if (!$tableOtp->save($dataOtp)) {
+                $this->renderJson([
+                    'status' => 'error',
+                    'message' => 'Không thể lưu mã OTP',
+                    'errors' => $dataOtp->getErrors(),
+                ], 500);
+
+                return;
+            }
+
 
             $this->renderJson([
                 'status' => 'success',
@@ -241,12 +263,21 @@ class UsersController extends AppController
             return;
         }
 
-        $otp = $this->Comon->randomOTP();
-        $this->Comon->sendOTP($otp, $email);
+        $otp = $this->generateOtp();
+        $mailSent = $this->mailService->sendOtp($otp, $email);
+
+        if (!$mailSent) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể gửi lại OTP qua email',
+            ], 500);
+
+            return;
+        }
 
         $tableOtp = $this->fetchTable('UserOtps');
 
-        $tableOtp->deleteAll([               //delete otp cu truoc khi tao otp moi
+        $tableOtp->deleteAll([               //delete otp cu truoc khi tao otp moI
             'email' => $email,
         ]);
 
@@ -257,7 +288,16 @@ class UsersController extends AppController
             'expires_at' => FrozenTime::now()->addMinutes(5),
         ]);
 
-        $tableOtp->save($dataOtp);
+        //save
+        if (!$tableOtp->save($dataOtp)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể lưu mã OTP',
+                'errors' => $dataOtp->getErrors(),
+            ], 500);
+
+            return;
+        }
 
         $this->renderJson([
             'status' => 'success',
@@ -271,7 +311,7 @@ class UsersController extends AppController
     {
         $this->request->allowMethod(['get']);
 
-        $userId = $this->getAuthenticatedUserId();               //user dang trong phien 
+        $userId = $this->getAuthenticatedUserId();               //user đang trong phiên
         if ($userId === null) {
             $this->renderJson([
                 'status' => 'error',
@@ -345,6 +385,7 @@ class UsersController extends AppController
             return $this->error('Validation failed', $user->getErrors(), 422);
         }
 
+        //Kiem tra trung da co trong buildRules() UserTable
         if ($this->Users->find()->where(['username' => $user->username])->first()) {
             $this->renderJson([
                 'status' => 'error',
@@ -373,6 +414,7 @@ class UsersController extends AppController
         ], 'Đăng ký thành công');
     }
 
+    //LOGOUT
     public function logout(): void
     {
         $this->request->allowMethod(['post']);
@@ -384,23 +426,173 @@ class UsersController extends AppController
         ]);
     }
 
-    public function delete($id = null): void
+    //FORGOT_PASS 
+    public function forgotPassword(): void
     {
-        $this->request->allowMethod(['post', 'delete']);
+        $this->request->allowMethod(['post']);
 
-        $user = $this->Users->get($id);
-        if ($this->Users->delete($user)) {
+        $email = trim((string)$this->request->getData('email'));
+
+        if ($email === '') {
             $this->renderJson([
-                'status' => 'success',
-                'message' => 'Đã xoá User',
-            ]);
+                'status' => 'error',
+                'message' => 'Vui lòng nhập email',
+            ], 400);
+            return;
+        }
 
+        $user = $this->Users->find()
+            ->where(['email' => $email])
+            ->first();
+
+        if (!$user) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Email không tồn tại',
+            ], 404);
+            return;
+        }
+
+        $plainToken = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $plainToken);
+
+        $passwordResetTokensTable = $this->fetchTable('PasswordResetTokens');
+
+        $passwordResetTokensTable->deleteAll([
+            'user_id' => $user->id,
+            'used_at IS' => null,
+        ]);
+
+        $entity = $passwordResetTokensTable->newEntity([
+            'user_id' => $user->id,
+            'token_hash' => $tokenHash,
+            'expires_at' => FrozenTime::now()->addMinutes(5),
+            'used_at' => null,
+            'created_at' => FrozenTime::now(),
+        ]);
+
+        if (!$passwordResetTokensTable->save($entity)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể tạo liên kết đặt lại mật khẩu',
+            ], 500);
+            return;
+        }
+
+        $frontendUrl = 'http://localhost:5173/reset-password';
+        $resetLink = $frontendUrl . '?token=' . urlencode($plainToken);
+
+        $mailSent = $this->mailService->sendResetPasswordLink($resetLink, $email);
+
+        if (!$mailSent) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể gửi email đặt lại mật khẩu',
+            ], 500);
             return;
         }
 
         $this->renderJson([
-            'status' => 'error',
-            'message' => 'Không thể xoá User này !',
-        ], 422);
+            'status' => 'success',
+            'message' => 'Liên kết đặt lại mật khẩu đã được gửi đến email của bạn',
+        ]);
+    }
+
+    //RESET_PASS 
+    public function resetPassword(): void
+    {
+        $this->request->allowMethod(['post']);
+
+        $token = trim((string)$this->request->getData('token'));
+        $password = trim((string)$this->request->getData('password'));
+
+        if ($token === '' || $password === '') {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Thiếu token hoặc mật khẩu mới',
+            ], 400);
+            return;
+        }
+
+        if (!preg_match('/^[0-9]{8}$/', $password)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Mật khẩu phải gồm đúng 8 chữ số',
+            ], 422);
+            return;
+        }
+
+        $weakPasswords = ['00000000', '11111111', '12345678', '87654321', '88888888'];
+
+        if (in_array($password, $weakPasswords, true) || preg_match('/^(\d)\1+$/', $password)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Mật khẩu quá đơn giản, vui lòng chọn mật khẩu khác',
+            ], 422);
+            return;
+        }
+
+        $tokenHash = hash('sha256', $token);
+
+        $passwordResetTokensTable = $this->fetchTable('PasswordResetTokens');
+
+        $resetRecord = $passwordResetTokensTable->find()
+            ->where([
+                'token_hash' => $tokenHash,
+                'used_at IS' => null,
+                'expires_at >' => FrozenTime::now(),
+            ])
+            ->first();
+
+        if (!$resetRecord) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn',
+            ], 400);
+            return;
+        }
+
+        // $user = $this->Users->get($resetRecord->user_id);
+        // if (!$user) {
+        //     $this->renderJson([
+        //         'status' => 'error',
+        //         'message' => 'Không tìm thấy user',
+        //     ], 404);
+        //     return;
+        // }
+
+        $user = $this->Users->find()
+            ->where(['id' => $resetRecord->user_id])
+            ->first();
+            //get() nếu không tìm thấy record thì ném exception, không trả về null hoặc false
+
+        $user->password = $password;        //trong User.php da co setter tu Hash Pass
+
+        if (!$this->Users->save($user)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể cập nhật mật khẩu',
+            ], 422);
+            return;
+        }
+
+        $resetRecord->used_at = FrozenTime::now();
+        $passwordResetTokensTable->save($resetRecord);
+
+        $this->renderJson([
+            'status' => 'success',
+            'message' => 'Đặt lại mật khẩu thành công',
+        ]);
+    }
+
+    //Tạo OTP
+    private function generateOtp(int $length = 6): string
+    {
+        return str_pad(
+            (string)random_int(0, (10 ** $length) - 1),
+            $length,
+            '0',
+            STR_PAD_LEFT
+        );
     }
 }

@@ -1,5 +1,7 @@
 import UserLayout from "../../../layouts/UserLayout";
 import HourPowerChart from "../../shared/components/chart/HourPowerChart";
+import DayEnergyChart from "../../shared/components/chart/DayEnergyChart";
+import MonthEnergyChart from "../../shared/components/chart/MonthEnergyChart";
 
 export default function StatisticsPage() {
     return (
@@ -40,21 +42,27 @@ export default function StatisticsPage() {
                 <h3 className="mb-4 text-lg font-semibold text-slate-800">
                     CÔNG SUẤT TRUNG BÌNH THEO GIỜ
                 </h3>
+
                 <HourPowerChart />
+                
             </section>
 
             <section id="day" className="mt-6 rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur">
                 <h3 className="mb-4 text-lg font-semibold text-slate-800">
                     ĐIỆN NĂNG TIÊU THỤ THEO NGÀY
                 </h3>
-              
+
+                <DayEnergyChart />
+
             </section>
 
             <section id="month" className="mt-6 rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur">
                 <h3 className="mb-4 text-lg font-semibold text-slate-800">
                     ĐIỆN NĂNG TIÊU THỤ THEO THÁNG
                 </h3>
-                
+
+                <MonthEnergyChart />
+
             </section>
         </UserLayout>
     );

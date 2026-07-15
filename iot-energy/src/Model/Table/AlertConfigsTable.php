@@ -44,13 +44,13 @@ class AlertConfigsTable extends Table
 
         $validator
             ->scalar('mode')
-            ->maxLength('mode', 50)
-            ->allowEmptyString('mode');
+            ->inList('mode', ['auto', 'manual'])
+            ->notEmptyString('mode');
 
         $validator
             ->scalar('learning_status')
-            ->maxLength('learning_status', 50)
-            ->allowEmptyString('learning_status');
+            ->inList('learning_status', ['learning', 'learned_3d', 'learned_7d','adaptive'])
+            ->notEmptyString('learning_status');
 
         $validator
             ->dateTime('learned_at')

@@ -13,19 +13,80 @@ import ProtectedRoute from "../../guard/ProtectedRoute";
 import OtpGuard from "../../guard/OtpGuard";
 import AdminDashboardPage from "../../features/admin/pages/AdminDashboardPage";
 import LandingPage from "../../features/public/pages/LandingPage";
+import ElectricityPricePage from "../../features/admin/pages/EPricePage";
+import ForgotPassPage from "../../features/auth/pages/ForgotPassPage";
+import ResetPassPage from "../../features/auth/pages/ResetPassPage";
 import DeviceDetailPage from "../../features/main/pages/DeviceDetailPage";
+import AdminUsersPage from "../../features/admin/pages/AdminUsersPage";
+import AdminUserDetailPage from "../../features/admin/pages/AdminUserDetailPage";
+import AdminIotDevicesPage from "../../features/admin/pages/AdminIotDevicesPage";
+import AdminMonitoringPage from "../../features/admin/pages/AdminMonitoringPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: <LandingPage />
   },
 
   {
     path: "/dashboard",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireUser>
         <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/devices",
+    element: (
+      <ProtectedRoute requireUser>
+        <DevicePage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/devices/:id",
+    element: (
+      <ProtectedRoute requireUser>
+        <DeviceDetailPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/thresholds",
+    element: (
+      <ProtectedRoute requireUser>
+        <ThresholdPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/statistics",
+    element: (
+      <ProtectedRoute requireUser>
+        <StatisticsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/alerts",
+    element: (
+      <ProtectedRoute requireUser>
+        <AlertsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/utilities",
+    element: (
+      <ProtectedRoute requireUser>
+        <UtilitiesPage />
       </ProtectedRoute>
     ),
   },
@@ -40,46 +101,43 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: "/devices",
+    path: "/admin/users",
     element: (
-      <ProtectedRoute>
-        <DevicePage />
+      <ProtectedRoute requireAdmin>
+        <AdminUsersPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/users/:id",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminUserDetailPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/iot-devices",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminIotDevicesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/monitoring",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminMonitoringPage />
       </ProtectedRoute>
     ),
   },
 
   {
-    path: "/thresholds",
+    path: "/admin/electricity-prices",
     element: (
-      <ProtectedRoute>
-        <ThresholdPage />
-      </ProtectedRoute>
-    ),
-  },
-
-  {
-    path: "/statistics",
-    element: (
-      <ProtectedRoute>
-        <StatisticsPage />
-      </ProtectedRoute>
-    ),
-  },
-
-  {
-    path: "/alerts",
-    element: (
-      <ProtectedRoute>
-        <AlertsPage />
-      </ProtectedRoute>
-    ),
-  },
-
-  {
-    path: "/utilities",
-    element: (
-      <ProtectedRoute>
-        <UtilitiesPage />
+      <ProtectedRoute requireAdmin>
+        <ElectricityPricePage />
       </ProtectedRoute>
     ),
   },
@@ -110,8 +168,23 @@ export const router = createBrowserRouter([
       </OtpGuard>
     ),
   },
+
   {
-    path: "/devices/:id",
-    element: <DeviceDetailPage />,
-  }
+    path: "/forgot-password",
+    element: (
+      <PublicRoute>
+        <ForgotPassPage />
+      </PublicRoute>
+    ),
+  },
+
+  {
+    path: "/reset-password",
+    element: (
+      <PublicRoute>
+        <ResetPassPage />
+      </PublicRoute>
+    ),
+  },
+
 ]);

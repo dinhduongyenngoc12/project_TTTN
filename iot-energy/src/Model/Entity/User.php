@@ -11,6 +11,7 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string|null $username
+ * @property string|null $email
  * @property string|null $password
  * @property string|null $role
  *

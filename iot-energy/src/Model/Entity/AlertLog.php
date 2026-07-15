@@ -15,5 +15,6 @@ class AlertLog extends Entity
         'created_at' => true,
         'alert_config' => true,
         'energy_log' => true,
+        'threshold_value' => true
     ];
 }

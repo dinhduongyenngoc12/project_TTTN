@@ -18,6 +18,7 @@ class AlertConfig extends Entity
         'mode' => true,
         'learning_status' => true,
         'learned_at' => true,
+        'last_learned_date' => true,	
         'created_at' => true,
         'last_email_sent_at' => true,
         'device' => true,

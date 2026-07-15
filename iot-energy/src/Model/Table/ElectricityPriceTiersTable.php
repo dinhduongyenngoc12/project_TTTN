@@ -20,18 +20,43 @@ class ElectricityPriceTiersTable extends Table
 
     public function validationDefault(Validator $validator): Validator
     {
-        $validator->integer('tier_order')->requirePresence('tier_order', 'create')->notEmptyString('tier_order');
-        $validator->numeric('from_kwh')->requirePresence('from_kwh', 'create')->notEmptyString('from_kwh');
-        $validator->numeric('to_kwh')->allowEmptyString('to_kwh');
-        $validator->numeric('price_kwh')->requirePresence('price_kwh', 'create')->notEmptyString('price_kwh');
-        $validator->date('effective_from')->requirePresence('effective_from', 'create')->notEmptyDate('effective_from');
+        $validator
+            ->integer('tier_order')
+            ->requirePresence('tier_order', 'create')
+            ->notEmptyString('tier_order')
+            ->greaterThanOrEqual('tier_order', 1);          //>=
+
+        $validator
+            ->decimal('from_kwh')                           //thap phan
+            ->requirePresence('from_kwh', 'create')
+            ->notEmptyString('from_kwh')
+            ->greaterThanOrEqual('from_kwh', 0);               
+
+        $validator
+            ->decimal('to_kwh')
+            ->allowEmptyString('to_kwh')
+            ->greaterThanOrEqual('to_kwh', 0);
+
+        $validator
+            ->decimal('price_kwh')
+            ->requirePresence('price_kwh', 'create')
+            ->notEmptyString('price_kwh')
+            ->greaterThan('price_kwh', 0);                  //>
+
+        $validator
+            ->date('effective_from')
+            ->requirePresence('effective_from', 'create')
+            ->notEmptyDate('effective_from');
 
         return $validator;
     }
 
-    public function buildRules(RulesChecker $rules): RulesChecker
+    public function buildRules(RulesChecker $rules): RulesChecker           //check rang buoc
     {
-        $rules->add($rules->isUnique(['effective_from', 'tier_order']), ['errorField' => 'tier_order']);
+        $rules->add(
+            $rules->isUnique(['effective_from', 'tier_order']),       //effective_from - trong 1 ngay ap dung Khong co tier_order - bac dien Trung nhau
+            ['errorField' => 'tier_order']
+        );
 
         return $rules;
     }

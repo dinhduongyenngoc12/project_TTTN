@@ -22,16 +22,16 @@ class AuthSocialService
 
         $oauthProvider = $this->getProvider($provider);
 
-        // Đổi code lấy access token
+        //Đổi code lấy access token
         $token = $oauthProvider->getAccessToken('authorization_code', [
             'code' => $code,
         ]);
 
-        // Lấy thông tin user từ provider
+        //Lấy thông tin user từ provider
         /** @var GoogleUser $socialUser */
         $socialUser = $oauthProvider->getResourceOwner($token);
 
-        // Chuẩn hóa data từ các provider khác nhau về cùng 1 format
+        //Chuẩn hóa data từ các provider khác nhau về cùng 1 format
         return match ($provider) {
             'google' => [
                 'provider'    => 'google',

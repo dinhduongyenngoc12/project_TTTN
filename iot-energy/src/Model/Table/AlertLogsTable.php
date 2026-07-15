@@ -36,11 +36,18 @@ class AlertLogsTable extends Table
 
         $validator
             ->integer('energy_log_id')
-            ->allowEmptyString('energy_log_id');
+            ->notEmptyString('energy_log_id');
 
         $validator
             ->numeric('power_value')
-            ->allowEmptyString('power_value');
+            ->requirePresence('power_value', 'create')
+            ->notEmptyString('power_value');
+
+        $validator
+            ->numeric('threshold_value')
+            ->requirePresence('threshold_value', 'create')     //co gui field threshold_value len khong {}
+                                                                //create - chi bat buoc khi newEntity()
+            ->notEmptyString('threshold_value');
 
         $validator
             ->boolean('email_sent')
@@ -48,7 +55,7 @@ class AlertLogsTable extends Table
 
         $validator
             ->dateTime('created_at')
-            ->allowEmptyDateTime('created_at');
+            ->notEmptyDateTime('created_at');
 
         return $validator;
     }

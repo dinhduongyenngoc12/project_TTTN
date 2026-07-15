@@ -23,7 +23,7 @@ class AuthSocialProvider {
             },
         ]);
 
-        // Lưu state chống CSRF
+        //Lưu state chống CSRF
         $session->write('oauth2state', $oauthProvider->getState());
 
         return $authUrl;

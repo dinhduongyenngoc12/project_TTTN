@@ -34,19 +34,39 @@ class DevicesController extends AppController
             'message' => 'Lấy danh sách thiết bị thành công',
             'keyword' => $keyword,
             'devices' => $devices,
-            'pagingData' => [],
+            'pagingData' => []
         ]);
     }
 
-    public function view($id = null): void
+    public function view(int $id): void
     {
         $this->request->allowMethod(['get']);
 
-        $device = $this->devicesService->getById($id);
+        $userId = $this->getAuthenticatedUserId();
+
+        if ($userId === null) {
+            $this->renderJson([
+                'success' => false,
+                'message' => 'Người dùng chưa đăng nhập.',
+            ], 401);
+
+            return;
+        }
+
+        $data = $this->devicesService->getDetail($id, $userId);
+
+        if ($data === null) {
+            $this->renderJson([
+                'success' => false,
+                'message' => 'Không tìm thấy thiết bị hoặc bạn không có quyền truy cập.',
+            ], 404);
+
+            return;
+        }
 
         $this->renderJson([
-            'status' => 'success',
-            'device' => $device,
+            'success' => true,
+            'data' => $data,
         ]);
     }
 
@@ -65,13 +85,14 @@ class DevicesController extends AppController
             return;
         }
 
-        $data = $this->request->getData();
+        $requestData = $this->request->getData();
 
         $data = [
             'user_id' => $userId,
-            'name' => trim((string)($data['name'] ?? '')),
-            'device_type' => trim((string)($data['device_type'] ?? '')),
-            'rated_power' => $data['rated_power'] ?? null,
+            'name' => trim((string)($requestData['name'] ?? '')),
+            'device_type' => trim((string)($requestData['device_type'] ?? '')),
+            'rated_power' => $requestData['rated_power'] ?? null,
+            'api_key' => trim((string)($requestData['api_key'] ?? '')),
         ];
 
         $result = $this->devicesService->create($data);
@@ -79,7 +100,7 @@ class DevicesController extends AppController
         if (!$result['saved']) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'Không thể tạo thiết bị',
+                'message' => $result['message'] ?? 'Không thể tạo thiết bị',
                 'errors' => $result['device']->getErrors(),
             ], 422);
 
@@ -88,7 +109,7 @@ class DevicesController extends AppController
 
         $this->renderJson([
             'status' => 'success',
-            'message' => 'Tạo thiết bị thành công. Thiết bị đang chờ quản trị viên kích hoạt.',
+            'message' => 'Tạo thiết bị thành công',
             'device' => $result['device'],
         ], 201);
     }
@@ -97,20 +118,31 @@ class DevicesController extends AppController
     {
         $this->request->allowMethod(['patch', 'post', 'put']);
 
-        $data = $this->request->getData();
+        $userId = $this->getAuthenticatedUserId();
+
+        if ($userId === null) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Người dùng chưa đăng nhập',
+            ], 401);
+
+            return;
+        }
+
+        $requestData = $this->request->getData();
 
         $data = [
-            'name' => trim((string)($data['name'] ?? '')),
-            'device_type' => trim((string)($data['device_type'] ?? '')),
-            'rated_power' => $data['rated_power'] ?? null,
+            'name' => trim((string)($requestData['name'] ?? '')),
+            'device_type' => trim((string)($requestData['device_type'] ?? '')),
+            'rated_power' => $requestData['rated_power'] ?? null,
         ];
 
-        $result = $this->devicesService->update($id, $data);
+        $result = $this->devicesService->update((int)$id, $userId, $data);
 
         if (!$result['saved']) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'Không thể cập nhật thiết bị',
+                'message' => $result['message'] ?? 'Không thể cập nhật thiết bị',
                 'errors' => $result['device']->getErrors(),
             ], 422);
 
@@ -120,59 +152,6 @@ class DevicesController extends AppController
         $this->renderJson([
             'status' => 'success',
             'message' => 'Cập nhật thiết bị thành công',
-            'device' => $result['device'],
-        ]);
-    }
-
-    public function delete($id = null): void
-    {
-        $this->request->allowMethod(['delete', 'post']);
-
-        if (!$this->devicesService->remove($id)) {
-            $this->renderJson([
-                'status' => 'error',
-                'message' => 'Không thể xóa thiết bị',
-            ], 422);
-
-            return;
-        }
-
-        $this->renderJson([
-            'status' => 'success',
-            'message' => 'Xóa thiết bị thành công',
-        ]);
-    }
-
-   public function updateStatus($id = null): void
-    {
-        $this->request->allowMethod(['patch']);
-
-        if (!$this->requireAdmin()) {
-            $this->renderJson([
-                'status' => 'error',
-                'message' => 'Bạn không có quyền cập nhật trạng thái thiết bị',
-            ], 403);
-
-            return;
-        }
-
-        $status = trim((string)$this->request->getData('status'));
-
-        $result = $this->devicesService->updateStatus($id, $status);
-
-        if (!$result['saved']) {
-            $this->renderJson([
-                'status' => 'error',
-                'message' => 'Không thể cập nhật trạng thái thiết bị',
-                'errors' => $result['device']->getErrors(),
-            ], 422);
-
-            return;
-        }
-
-        $this->renderJson([
-            'status' => 'success',
-            'message' => 'Cập nhật trạng thái thiết bị thành công',
             'device' => $result['device'],
         ]);
     }

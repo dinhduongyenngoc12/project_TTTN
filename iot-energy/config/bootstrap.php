@@ -96,6 +96,9 @@ if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
 }
 
+//app.php bị ghi đè bởi app_local.php => app_local.php là cấu hình code có ưu tiên cao hơn app.php.
+
+
 /*
  * When debug = true the metadata cache should only last for a short time.
  */

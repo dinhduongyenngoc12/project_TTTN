@@ -4,26 +4,26 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
+use App\Service\AlertConfigsService;
 
 class AlertConfigsController extends AppController
 {
+    protected AlertConfigsService $alertConfigsService;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->alertConfigsService = new AlertConfigsService();
+    }
+
     public function index(): void
     {
         $this->request->allowMethod(['get']);
 
-        $userId = $this->getAuthenticatedUserId();
-
-        $query = $this->AlertConfigs->find()
-            ->contain(['Devices'])
-            ->orderBy(['AlertConfigs.id' => 'DESC']);
-
-        if ($userId !== null) {
-            $query->innerJoinWith('Devices', function ($q) use ($userId) {
-                return $q->where(['Devices.user_id' => $userId]);
-            });
-        }
-
-        $alertConfigs = $query->all()->toList();
+        $alertConfigs = $this->alertConfigsService->getList(
+            $this->getAuthenticatedUserId()
+        );
 
         $this->renderJson([
             'status' => 'success',
@@ -36,22 +36,15 @@ class AlertConfigsController extends AppController
     {
         $this->request->allowMethod(['get']);
 
-        $userId = $this->getAuthenticatedUserId();
-        $query = $this->AlertConfigs->find()
-            ->contain(['Devices'])
-            ->where(['AlertConfigs.id' => $id]);
+        $alertConfig = $this->alertConfigsService->getDetail(
+            (int)$id,
+            $this->getAuthenticatedUserId()
+        );
 
-        if ($userId !== null) {
-            $query->innerJoinWith('Devices', function ($q) use ($userId) {
-                return $q->where(['Devices.user_id' => $userId]);
-            });
-        }
-
-        $alertConfig = $query->first();
         if (!$alertConfig) {
             $this->renderJson([
                 'status' => 'error',
-                'message' => 'Khong tim thay cau hinh canh bao.',
+                'message' => 'Không tìm thấy cấu hình cảnh báo.',
             ], 404);
 
             return;
@@ -68,58 +61,27 @@ class AlertConfigsController extends AppController
     {
         $this->request->allowMethod(['patch', 'put']);
 
-        $userId = $this->getAuthenticatedUserId();
-        $query = $this->AlertConfigs->find()
-            ->contain(['Devices'])
-            ->where(['AlertConfigs.id' => $id]);
-
-        if ($userId !== null) {
-            $query->innerJoinWith('Devices', function ($q) use ($userId) {
-                return $q->where(['Devices.user_id' => $userId]);
-            });
-        }
-
-        $alertConfig = $query->first();
-        if (!$alertConfig) {
-            $this->renderJson([
-                'status' => 'error',
-                'message' => 'Khong tim thay cau hinh canh bao.',
-            ], 404);
-
-            return;
-        }
-
-        $alertConfig = $this->AlertConfigs->patchEntity(
-            $alertConfig,
-            $this->normalizeAlertConfigPayload($this->request->getData())
+        $result = $this->alertConfigsService->update(
+            (int)$id,
+            $this->getAuthenticatedUserId(),
+            $this->request->getData()
         );
 
-        if ($this->AlertConfigs->save($alertConfig)) {
+        if (!$result['saved']) {
             $this->renderJson([
-                'status' => 'success',
-                'message' => 'Cap nhat cau hinh canh bao thanh cong.',
-                'alertConfig' => $alertConfig,
-                'threshold' => $alertConfig,
-            ]);
+                'status' => 'error',
+                'message' => $result['message'],
+                'errors' => $result['errors'],
+            ], $result['statusCode']);
 
             return;
         }
 
         $this->renderJson([
-            'status' => 'error',
-            'message' => 'Khong the cap nhat cau hinh canh bao.',
-            'errors' => $alertConfig->getErrors(),
-        ], 422);
-    }
-
-    private function normalizeAlertConfigPayload(array $data): array
-    {
-        if (array_key_exists('max_power', $data)) {
-            $data['power_threshold'] = $data['power_threshold'] ?? $data['max_power'];
-            $data['default_threshold'] = $data['default_threshold'] ?? $data['max_power'];
-            unset($data['max_power']);
-        }
-
-        return $data;
+            'status' => 'success',
+            'message' => $result['message'],
+            'alertConfig' => $result['alertConfig'],
+            'threshold' => $result['alertConfig'],
+        ]);
     }
 }

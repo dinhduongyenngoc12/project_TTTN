@@ -48,22 +48,26 @@ class DevicesTable extends Table
         $this->setPrimaryKey('id');
 
         $this->belongsTo('Users', [
-            'foreignKey' => 'user_id',
+            'foreignKey' => 'user_id'
+        ]);
+        $this->belongsTo('IotDevices', [
+            'foreignKey' => 'iot_device_id',
+            'joinType' => 'LEFT'
         ]);
         $this->hasMany('EnergyLogs', [
-            'foreignKey' => 'device_id',
+            'foreignKey' => 'device_id'
         ]);
         $this->hasOne('AlertConfigs', [
-            'foreignKey' => 'device_id',
+            'foreignKey' => 'device_id'
         ]);
         $this->hasMany('HourSummaries', [
-            'foreignKey' => 'device_id',
+            'foreignKey' => 'device_id'
         ]);
         $this->hasMany('DailySummaries', [
-            'foreignKey' => 'device_id',
+            'foreignKey' => 'device_id'
         ]);
         $this->hasMany('MonthSummaries', [
-            'foreignKey' => 'device_id',
+            'foreignKey' => 'device_id'
         ]);
     }
 
@@ -78,6 +82,10 @@ class DevicesTable extends Table
         $validator
             ->integer('user_id')
             ->notEmptyString('user_id');
+
+        $validator
+            ->integer('iot_device_id')
+            ->allowEmptyString('iot_device_id');
 
         $validator
             ->scalar('name')
@@ -97,23 +105,21 @@ class DevicesTable extends Table
             ->allowEmptyString('rated_power');
 
         $validator
-            ->scalar('api_key')
-            ->maxLength('api_key', 191)
-            ->allowEmptyString('api_key');
-
-        $validator
             ->scalar('status')
-            ->inList('status', ['pending', 'active', 'disabled'])
+            ->inList('status', ['active', 'inactive'])
             ->allowEmptyString('status');
-
-        $validator
-            ->dateTime('last_seen_at')
-            ->allowEmptyDateTime('last_seen_at');
 
         $validator
             ->dateTime('activated_at')
             ->allowEmptyDateTime('activated_at');
 
+        $validator
+            ->dateTime('created_at')
+            ->allowEmptyDateTime('created_at');
+
+        $validator
+            ->dateTime('updated_at')
+            ->allowEmptyDateTime('updated_at');
         return $validator;
     }
 
@@ -132,8 +138,8 @@ class DevicesTable extends Table
         );
 
         $rules->add(
-            $rules->isUnique(['api_key'], ['allowMultipleNulls' => true]),
-            ['errorField' => 'api_key']
+            $rules->existsIn(['iot_device_id'], 'IotDevices'),
+            ['errorField' => 'iot_device_id']
         );
 
         return $rules;

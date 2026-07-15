@@ -5,9 +5,7 @@ import { useLoginForm } from "../hooks/useAuthForm";
 import { ButtonSocial } from "../../shared/components/ButtonSocial";
 //import { useOtpData } from "../../../app/store/useAuthStore";
 import { Link } from "react-router-dom";
-
-const illustrationUrl =
-    "https://drive.google.com/uc?export=view&id=1KZ_Ub_2lZ0dHbKV0fAIhxVhiQA183RCz";
+import { BackGround } from "../../shared/components/BackGround";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -61,13 +59,22 @@ export default function LoginPage() {
                                     placeholder={"Mật khẩu"}
                                 />
 
+                                <p className="text-right">
+                                    <Link
+                                        to="/forgot-password"
+                                        className="text-sm font-semibold text-green-600 hover:text-green-700 hover:underline"
+                                    >
+                                        Quên mật khẩu?
+                                    </Link>
+                                </p>
+
 
                                 <Button title="ĐĂNG NHẬP" disabled={isPending} />
                                 {msg && (
                                     <p
                                         className={`mt-3 text-center text-sm ${msg.includes("THÀNH CÔNG")
-                                                ? "text-green-600"
-                                                : "text-red-500"
+                                            ? "text-green-600"
+                                            : "text-red-500"
                                             }`}
                                     >
                                         {msg}
@@ -83,35 +90,11 @@ export default function LoginPage() {
                                         Đăng ký
                                     </Link>
                                 </p>
-
-                                {/* <p className="mt-6 text-center text-xs text-gray-600">
-                                    I agree to abide by electrical energy management system{" "}
-                                    <a
-                                        href="#"
-                                        className="border-b border-dotted border-gray-500"
-                                    >
-                                        Terms of Service
-                                    </a>{" "}
-                                    and its{" "}
-                                    <a
-                                        href="#"
-                                        className="border-b border-dotted border-gray-500"
-                                    >
-                                        Privacy Policy
-                                    </a>
-                                    .
-                                </p> */}
                             </form>
                         </div>
                     </div>
                 </div>
-
-                <div className="hidden flex-1 bg-green-100 text-center lg:flex">
-                    <div
-                        className="m-12 w-full bg-contain bg-center bg-no-repeat xl:m-16"
-                        style={{ backgroundImage: `url("${illustrationUrl}")` }}
-                    />
-                </div>
+                <BackGround/>
             </div>
         </div>
     );

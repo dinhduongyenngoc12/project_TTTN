@@ -64,24 +64,55 @@ class UsersTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
+
+
+    //Rang buoc du lieu dau vao
     public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->scalar('username')
-            ->maxLength('username', 50)
-            ->allowEmptyString('username');
+            ->requirePresence('username', true, 'Vui lòng nhập username')    //kiem tra field co duoc gui len khong, true -> bat buoc field phai co moi luc
+            ->notEmptyString('username', 'Username không được để trống')     //kiem tra field co rong hay khong
+            ->minLength('username', 2, 'Username phải có ít nhất 2 ký tự')
+            ->maxLength('username', 50, 'Username không được vượt quá 50 ký tự')
+            ->add('username', 'validFormat', [
+                'rule' => ['custom', '/^[a-zA-Z0-9_]+$/'],
+                'message' => 'Username chỉ được chứa chữ, số và dấu gạch dưới',
+            ]);
 
         $validator
             ->scalar('email')
-            ->maxLength('email', 255)
-            ->email('email')
-            ->requirePresence('email', 'create')
-            ->notEmptyString('email');
+            ->requirePresence('email',true, 'Vui lòng nhập email')
+            ->notEmptyString('email', 'Email không được để trống')
+            ->email('email', false, 'Email không đúng định dạng')
+            ->maxLength('email', 255, 'Email không được vượt quá 255 ký tự');
 
         $validator
             ->scalar('password')
-            ->maxLength('password', 255)
-            ->allowEmptyString('password');
+            ->requirePresence('password', true, 'Vui lòng nhập mật khẩu')
+            ->notEmptyString('password', 'Mật khẩu không được để trống')
+            ->minLength('password', 8, 'Mật khẩu phải có đúng 8 ký tự')
+            ->maxLength('password', 8, 'Mật khẩu phải có đúng 8 ký tự')
+            ->add('password', 'numericOnly', [
+                'rule' => ['custom', '/^[0-9]+$/'],
+                'message' => 'Mật khẩu chỉ được chứa số',
+            ])
+            ->add('password', 'notWeakPassword', [
+                'rule' => function ($value, $context) {
+                    $weakPasswords = ['00000000', '11111111', '12345678', '87654321'];
+
+                    if (in_array($value, $weakPasswords, true)) {
+                        return false;
+                    }
+
+                    if (preg_match('/^(\d)\1+$/', $value)) {
+                        return false;
+                    }
+
+                    return true;
+                },
+                'message' => 'Mật khẩu quá đơn giản, vui lòng chọn mật khẩu khác',
+            ]);
 
         $validator
             ->scalar('role')
@@ -100,8 +131,9 @@ class UsersTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->isUnique(['username']), ['errorField' => 'username']);
-        $rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
+        $rules->add($rules->isUnique(['username'], 'Username đã tồn tại'), ['errorField' => 'username']);
+
+        $rules->add($rules->isUnique(['email'], 'Email đã tồn tại'), ['errorField' => 'email']);
 
         return $rules;
     }

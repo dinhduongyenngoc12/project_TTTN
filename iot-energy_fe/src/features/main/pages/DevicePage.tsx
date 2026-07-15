@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserLayout from "../../../layouts/UserLayout";
 import {
     createDeviceApi,
     getDevicesApi,
     updateDeviceApi,
+    type CreateDevicePayload,
+    type DeviceFormData,
     type DeviceItem,
-    type DevicePayload
+    type UpdateDevicePayload,
 } from "../../../api/deviceApi";
 import { DEVICE_STATUS_LABELS, formatDeviceDateTime, formatRatedPower, getConnectionStatus } from "../utils/deviceUtils";
 import DeviceFormModal from "../components/DeviceFormModal";
+import UserLayout from "../../../layouts/UserLayout";
 
 export default function DevicePage() {
     const [devices, setDevices] = useState<DeviceItem[]>([]);
@@ -20,7 +22,8 @@ export default function DevicePage() {
     const [editingDevice, setEditingDevice] = useState<DeviceItem | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const [formData, setFormData] = useState<DevicePayload>({
+    const [formData, setFormData] = useState<DeviceFormData>({
+        api_key: "",
         name: "",
         device_type: "Khác",
         rated_power: null,
@@ -36,7 +39,8 @@ export default function DevicePage() {
     ).length;
 
     const onlineDevices = devices.filter(
-        (device) => getConnectionStatus(device.last_seen_at) === "online",
+        (device) =>
+            getConnectionStatus(device.iot_last_seen_at) === "online",
     ).length;
 
     async function loadDevices() {        //GET /api/devices
@@ -55,24 +59,34 @@ export default function DevicePage() {
     }
 
     function openCreateForm() {
-        setEditingDevice(null);               //them moi
-        setFormData({
-            name: "",
-            device_type: "Khác",
-            rated_power: null,
-        });
-        setIsFormOpen(true);                  //mo modal
-    }
+    setEditingDevice(null); //đang ở chế độ thêm mới
+
+    //Reset đầy đủ dữ liệu form, bao gồm API Key
+    setFormData({
+        api_key: "",
+        name: "",
+        device_type: "Khác",
+        rated_power: null,
+    });
+
+    setError("");
+    setIsFormOpen(true); //mở modal
+}
 
     function openEditForm(device: DeviceItem) {
-        setEditingDevice(device);
-        setFormData({
-            name: device.name,
-            device_type: device.device_type,
-            rated_power: device.rated_power ?? null,
-        });
-        setIsFormOpen(true);
-    }
+    setEditingDevice(device);
+
+    setFormData({
+        //Không cập nhật API Key khi sửa thiết bị
+        api_key: "",
+        name: device.name,
+        device_type: device.device_type,
+        rated_power: device.rated_power ?? null,
+    });
+
+    setError("");
+    setIsFormOpen(true);
+}
 
     function closeForm() {
         setIsFormOpen(false);
@@ -81,47 +95,75 @@ export default function DevicePage() {
     }
 
     async function handleSubmitDevice() {
-        if (!formData.name.trim()) {
-            setError("Vui lòng nhập tên thiết bị.");
-            return;
-        }
+    //API Key chỉ bắt buộc khi thêm mới thiết bị
+    if (!editingDevice && !formData.api_key.trim()) {
+        setError("Vui lòng nhập API Key của bộ đo IoT.");
+        return;
+    }
 
-        if (!formData.device_type.trim()) {
-            setError("Vui lòng chọn loại thiết bị.");
-            return;
-        }
+    if (!formData.name.trim()) {
+        setError("Vui lòng nhập tên thiết bị.");
+        return;
+    }
 
-        setSubmitting(true);
-        setError("");
+    if (!formData.device_type.trim()) {
+        setError("Vui lòng chọn loại thiết bị.");
+        return;
+    }
 
-        try {
-            const payload: DevicePayload = {
+    if (
+        formData.rated_power !== null &&
+        Number(formData.rated_power) < 0
+    ) {
+        setError("Công suất định mức không được nhỏ hơn 0.");
+        return;
+    }
+
+    setSubmitting(true);
+    setError("");
+
+    try {
+        //Chuẩn hóa công suất định mức về number hoặc null
+        const ratedPower =
+            formData.rated_power === null ||
+            formData.rated_power === undefined ||
+            Number.isNaN(Number(formData.rated_power))
+                ? null
+                : Number(formData.rated_power);
+
+        if (editingDevice) {
+            //Khi sửa không gửi API Key vì không cho đổi bộ đo IoT
+            const updatePayload: UpdateDevicePayload = {
                 name: formData.name.trim(),
                 device_type: formData.device_type.trim(),
-                rated_power:
-                    formData.rated_power === null ||
-                        formData.rated_power === undefined ||
-                        Number.isNaN(Number(formData.rated_power))
-                        ? null
-                        : Number(formData.rated_power),
+                rated_power: ratedPower,
             };
-            //gui len api -> http request: vd: await createDeviceApi(payload): POST /api/devices  
-            // -> be: DevicesController::add() -> $devicesService->create(...) -> $devicesTable->save($device) -> mysql
 
-            if (editingDevice) {
-                await updateDeviceApi(editingDevice.id, payload);
-            } else {
-                await createDeviceApi(payload);
-            }
+            await updateDeviceApi(editingDevice.id, updatePayload);
+        } else {
+            //Khi thêm phải gửi API Key để backend tìm và liên kết bộ đo IoT
+            const createPayload: CreateDevicePayload = {
+                api_key: formData.api_key.trim(),
+                name: formData.name.trim(),
+                device_type: formData.device_type.trim(),
+                rated_power: ratedPower,
+            };
 
-            await loadDevices();
-            closeForm();
-        } catch {
-            setError("Không thể lưu thiết bị. Vui lòng thử lại.");
-        } finally {
-            setSubmitting(false);
+            await createDeviceApi(createPayload);
         }
+
+        await loadDevices();
+        closeForm();
+    } catch (requestError: any) {
+        const message =
+            requestError?.response?.data?.message ??
+            "Không thể lưu thiết bị. Vui lòng thử lại.";
+
+        setError(message);
+    } finally {
+        setSubmitting(false);
     }
+}
 
     useEffect(() => {
         void loadDevices();
@@ -194,8 +236,8 @@ export default function DevicePage() {
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {devices.map((device) => {
                             const connectionStatus = getConnectionStatus(
-                                device.last_seen_at,
-                            );
+    device.iot_last_seen_at,
+);
                             const isOnline = connectionStatus === "online";
 
                             return (
@@ -245,7 +287,7 @@ export default function DevicePage() {
                                         <p>
                                             Lần gửi cuối:{" "}
                                             <span className="font-semibold text-slate-800">
-                                                {formatDeviceDateTime(device.last_seen_at)}
+                                                {formatDeviceDateTime(device.iot_last_seen_at)}
                                             </span>
                                         </p>
                                     </div>

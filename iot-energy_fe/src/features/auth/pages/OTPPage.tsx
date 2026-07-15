@@ -2,9 +2,7 @@ import { useState, type SyntheticEvent } from "react";
 import { Input } from "../../shared/components/Input";
 import { Button } from "../../shared/components/Button";
 import { useOTPForm, useResendOTPForm } from "../hooks/useAuthForm";
-
-const illustrationUrl =
-    "https://drive.google.com/uc?export=view&id=1KZ_Ub_2lZ0dHbKV0fAIhxVhiQA183RCz";
+import { BackGround } from "../../shared/components/BackGround";
 
 export default function OTPPage() {
     const [otp, setOTP] = useState("");
@@ -43,11 +41,10 @@ export default function OTPPage() {
                                 <Button title="XÁC NHẬN" disabled={isPending} />
                                 {msg && (
                                     <p
-                                        className={`mt-3 text-center text-sm ${
-                                            msg.includes("THÀNH CÔNG")
+                                        className={`mt-3 text-center text-sm ${msg.includes("THÀNH CÔNG")
                                                 ? "text-green-600"
                                                 : "text-red-500"
-                                        }`}
+                                            }`}
                                     >
                                         {msg}
                                     </p>
@@ -74,13 +71,7 @@ export default function OTPPage() {
                         </div>
                     </div>
                 </div>
-
-                <div className="hidden flex-1 bg-green-100 text-center lg:flex">
-                    <div
-                        className="m-12 w-full bg-contain bg-center bg-no-repeat xl:m-16"
-                        style={{ backgroundImage: `url("${illustrationUrl}")` }}
-                    />
-                </div>
+                <BackGround />
             </div>
         </div>
     );

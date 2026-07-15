@@ -17,15 +17,16 @@ export const DEVICE_TYPES = [
     "Bàn là điện",
     "Bóng đèn",
     "Lọc hồ cá",
+    "Sạc điện thoại",
+    "Sạc Laptop",
     "Khác",
 ];
 
 //Record dùng để khai báo object có key là DeviceStatus và value là string
 //Mục đích: chuyển status từ backend sang nhãn tiếng Việt để hiển thị
 export const DEVICE_STATUS_LABELS: Record<DeviceStatus, string> = {
-    pending: "Chờ kích hoạt",
     active: "Đang hoạt động",
-    disabled: "Đã vô hiệu hóa",
+    inactive: "Đã dừng hoạt động",
 };
 
 
@@ -36,15 +37,19 @@ export function getConnectionStatus(
         return "offline";
     }
 
-    const lastSeenTime = new Date(lastSeenAt).getTime();     //chuyen thoi gian thanh timestamp (so mili giay ke tu 1/1/1970)
+    const lastSeenTimestamp = new Date(lastSeenAt).getTime();
 
-    if (!Number.isFinite(lastSeenTime)) {
+    if (!Number.isFinite(lastSeenTimestamp)) {
         return "offline";
     }
 
-    const diffMinutes = (Date.now() - lastSeenTime) / 1000 / 60;       //đổi mili s -> s -> phut: so phut chenh lech tu lan cuoi den bay gio
+    const differenceInSeconds =
+        (Date.now() - lastSeenTimestamp) / 1000;
 
-    return diffMinutes <= 2 ? "online" : "offline";
+    return differenceInSeconds >= 0
+        && differenceInSeconds <= 30
+            ? "online"
+            : "offline";
 }
 
 //format thoi gian

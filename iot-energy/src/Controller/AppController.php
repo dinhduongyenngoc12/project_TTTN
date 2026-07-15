@@ -43,7 +43,7 @@ class AppController extends Controller
     {
         parent::initialize();
 
-        //$this->loadComponent('RequestHandler');
+        //ESP32 không đăng nhập bằng tài khoản user và JWT -> bỏ yêu cầu identity user
         $this->loadComponent('Authentication.Authentication');
         if (
             $this->request->is('post')
@@ -51,6 +51,7 @@ class AppController extends Controller
         ) {
             $this->Authentication->disableIdentityCheck();
         }
+        //Quy định response của các controller kế thừa sử dụng JSON thay vì HTML template
         $this->viewBuilder()->setClassName('Json');
 
         /*
@@ -65,7 +66,6 @@ class AppController extends Controller
      *
      * @param array<string, mixed> $data Response data.
      * @param int $status HTTP status code.
-     * @return \Cake\Http\Response
      */ 
     protected function renderJson(array $data, int $status = 200): Response
     {
@@ -95,8 +95,12 @@ class AppController extends Controller
         ], $status);
     }
 
+
+    //Lấy ID user đang đăng nhập
     protected function getAuthenticatedUserId(): ?int
     {
+        // #1 Authentication Middleware thường gắn identity vào request  #2 Lấy identity từ Authentication component nếu request attribute không có 
+        //(có id thì ưu tiên lấy id, không thì lấy sub)
         $identity = $this->request->getAttribute('identity') ?? $this->Authentication->getIdentity();
 
         $userId = $this->readIdentityValue($identity, 'id');
@@ -107,6 +111,7 @@ class AppController extends Controller
         return is_numeric($userId) ? (int)$userId : null;
     }
 
+    //Lấy role đăng nhập
     protected function getAuthenticatedUserRole() : ?string
     {
         $identity = $this->request->getAttribute('identity') ?? $this->Authentication->getIdentity();
@@ -114,6 +119,7 @@ class AppController extends Controller
         return is_string($role) ? strtolower(trim($role)): null;
     }
 
+    //Kiểm tra quyền admin
     protected function requireAdmin(): bool
     {
         if ($this->getAuthenticatedUserRole() !== 'admin') {
@@ -128,11 +134,12 @@ class AppController extends Controller
         return true;
     }
 
+    //Method đọc một field từ nhiều kiểu identity khác nhau
     protected function readIdentityValue(mixed $identity, string $field): mixed
     {
         if ($identity === null) {
             return null;
-        }
+        } //khong có user đăng nhập
 
         if (is_array($identity) && array_key_exists($field, $identity)) {
             return $identity[$field];

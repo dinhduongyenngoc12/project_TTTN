@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { energyLogApi } from "../../../api/energyLogApi";
+import { statisticsApi } from "../../../api/statisticsApi";
 
-
-export const useDayPower = () => {
+export const useDayEnergy = (month?: string) => {
     return useQuery({
-        queryKey: ["day-energy"],
-        queryFn: energyLogApi.getDayPower,
-        staleTime: 0,
-        refetchOnMount: "always",
+        queryKey: ["day-energy", month],
+        queryFn: () => statisticsApi.getDayEnergy(month)    //React Query gọi arrow function, rồi arrow function mới gọi API với đúng tham số
     });
 };
-
 

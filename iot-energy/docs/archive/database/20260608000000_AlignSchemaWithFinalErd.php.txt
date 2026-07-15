@@ -1,9 +1,9 @@
+<?php
+declare(strict_types=1);
+
 //Migration la cong thuc tao ra db chuan tren moi moi truong (version hoa cung code)
 //20260608000000 la version/timestamp de sap xep thu tu chay migration
 //bin/cake bake migration AlignSchemaWithFinalErd
-
-<?php
-declare(strict_types=1);
 
 use Migrations\BaseMigration;
 

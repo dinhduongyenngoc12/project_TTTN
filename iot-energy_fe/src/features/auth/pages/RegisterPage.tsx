@@ -1,25 +1,44 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+    registerSchema,
+    type RegisterFormValues,
+} from "../../schemas/authSchema";
 import { useRegisterForm } from "../hooks/useAuthForm";
 import { Input } from "../../shared/components/Input";
 import { Button } from "../../shared/components/Button";
+import { BackGround } from "../../shared/components/BackGround";
 
-const illustrationUrl =
-    "https://drive.google.com/uc?export=view&id=1KZ_Ub_2lZ0dHbKV0fAIhxVhiQA183RCz";
 
 export default function RegisterPage() {
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    // const [username, setUsername] = useState("");
+    // const [email, setEmail] = useState("");
+    // const [password, setPassword] = useState("");
+    // const { handleRegister, isPending, msg } = useRegisterForm();
+
+    // const handleSubmit = (event: any) => {
+    //     event.preventDefault();
+
+    //     handleRegister({
+    //         username,
+    //         email,
+    //         password,
+    //     });
+    // };
+
     const { handleRegister, isPending, msg } = useRegisterForm();
 
-    const handleSubmit = (event: any) => {
-        event.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<RegisterFormValues>({
+        resolver: zodResolver(registerSchema),
+        mode: "onSubmit",
+    });
 
-        handleRegister({
-            username,
-            email,
-            password,
-        });
+    const onSubmit = (data: RegisterFormValues) => {
+        handleRegister(data);
     };
 
     return (
@@ -34,27 +53,43 @@ export default function RegisterPage() {
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
+                            <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-xs">
                                 <Input
-                                    type="username"
-                                    name="username"
-                                    onChange={(event) => setUsername(event.target.value)}
+                                    type="text"
                                     placeholder="Tên đăng nhập"
+                                    className={errors.username ? "border-red-500 bg-white" : ""}
+                                    {...register("username")}
                                 />
+                                {errors.username && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.username.message}
+                                    </p>
+                                )}
 
                                 <Input
                                     type="email"
-                                    name="email"
-                                    onChange={(event) => setEmail(event.target.value)}
                                     placeholder="Email"
+                                    className={errors.email ? "border-red-500 bg-white" : ""}
+                                    {...register("email")}
                                 />
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.email.message}
+                                    </p>
+                                )}
 
                                 <Input
                                     type="password"
-                                    name="password"
-                                    onChange={(event) => setPassword(event.target.value)}
                                     placeholder="Mật khẩu"
+                                    className={errors.password ? "border-red-500 bg-white" : ""}
+                                    {...register("password")}
                                 />
+
+                                {errors.password && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.password.message}
+                                    </p>
+                                )}
 
                                 <Button title="ĐĂNG KÝ" disabled={isPending} />
 
@@ -67,13 +102,7 @@ export default function RegisterPage() {
                         </div>
                     </div>
                 </div>
-
-                <div className="hidden flex-1 bg-green-100 text-center lg:flex">
-                    <div
-                        className="m-12 w-full bg-contain bg-center bg-no-repeat xl:m-16"
-                        style={{ backgroundImage: `url("${illustrationUrl}")` }}
-                    />
-                </div>
+                <BackGround />
             </div>
         </div>
     );

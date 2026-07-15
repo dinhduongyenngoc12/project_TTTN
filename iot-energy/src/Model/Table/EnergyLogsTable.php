@@ -62,15 +62,12 @@ class EnergyLogsTable extends Table
     {
         $validator
             ->integer('device_id')
-            ->allowEmptyString('device_id');
+            ->requirePresence('device_id', 'create')
+            ->notEmptyString('device_id');
 
         $validator
             ->numeric('power')
             ->allowEmptyString('power');
-
-        $validator
-            ->dateTime('created_at')
-            ->allowEmptyDateTime('created_at');
 
         $validator
             ->numeric('voltage')
@@ -86,11 +83,11 @@ class EnergyLogsTable extends Table
 
         $validator
             ->boolean('is_valid')
-            ->allowEmptyString('is_valid');
+            ->notEmptyString('is_valid');
 
         $validator
-            ->dateTime('recorded_at')
-            ->allowEmptyDateTime('recorded_at');
+            ->dateTime('created_at')
+            ->notEmptyDateTime('created_at');
 
         return $validator;
     }
