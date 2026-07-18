@@ -132,6 +132,7 @@ function CustomXAxisTick({ x = 0, y = 0, payload }: XAxisTickProps) {
             fill={PERIOD_COLORS[period]}
             fontSize={12}
             fontWeight={600}
+            fontFamily="inherit"
         >
             {payload?.value}
         </text>
@@ -281,7 +282,14 @@ export default function HourPowerChart() {
                 <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="hour" tick={<CustomXAxisTick />} />
-                    <YAxis />
+                    <YAxis
+                        tick={{
+                            fill: "#475569",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            fontFamily: "inherit",
+                        }}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar
                         dataKey="power"

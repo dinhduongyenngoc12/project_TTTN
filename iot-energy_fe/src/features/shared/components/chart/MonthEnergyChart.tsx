@@ -151,8 +151,24 @@ export default function MonthEnergyChart() {
                 <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="label" />
-                        <YAxis />
+                        <XAxis
+                            dataKey="label"
+                            tick={{
+                                fill: "#475569",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                fontFamily: "inherit",
+                            }}
+                        />
+
+                        <YAxis
+                            tick={{
+                                fill: "#475569",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                fontFamily: "inherit",
+                            }}
+                        />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar
                             dataKey="energy"

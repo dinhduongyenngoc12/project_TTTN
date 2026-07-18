@@ -100,9 +100,24 @@ export default function DayEnergyChart() {
                 <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
 
-                    <XAxis dataKey="label" />
+                    <XAxis
+                        dataKey="label"
+                        tick={{
+                            fill: "#475569",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            fontFamily: "inherit",
+                        }}
+                    />
 
-                    <YAxis />
+                    <YAxis
+                        tick={{
+                            fill: "#475569",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            fontFamily: "inherit",
+                        }}
+                    />
 
                     <Tooltip content={<CustomTooltip />} />
 

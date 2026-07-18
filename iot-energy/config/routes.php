@@ -76,6 +76,13 @@ return function (RouteBuilder $routes): void {
             $builder->get('/available-years', ['controller' => 'Statistics', 'action' => 'availableYears']);
         });
 
+        $builder->scope('/iot-devices', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+            $builder->get('', ['controller' => 'IotDevices', 'action' => 'index']);
+            $builder->post('', ['controller' => 'IotDevices', 'action' => 'add']);
+            $builder->patch('/{id}/disable', ['controller' => 'IotDevices', 'action' => 'disable'])->setPass(['id']);
+            $builder->patch('/{id}/enable', ['controller' => 'IotDevices', 'action' => 'enable'])->setPass(['id']);
+        });
+
         $builder->fallbacks();
     });
 };

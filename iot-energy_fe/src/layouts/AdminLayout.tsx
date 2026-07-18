@@ -13,21 +13,11 @@ type AdminMenuItem = {
 };
 
 const menuItems: AdminMenuItem[] = [
-    {
-        label: "Tổng quan", path: "/admin"
-    },
-    {
-        label: "Người dùng", path: "/admin/users"
-    },
-    {
-        label: "Bộ đo IoT", path: "/admin/iot-devices"
-    },
-    {
-        label: "Giám sát", path: "/admin/monitoring"
-    },
-    {
-        label: "Bảng giá điện", path: "/admin/electricity-prices"
-    },
+    { label: "Tổng quan", path: "/admin" },
+    { label: "Người dùng", path: "/admin/users" },
+    { label: "Bộ đo IoT", path: "/admin/iot-devices" },
+    { label: "Giám sát", path: "/admin/monitoring" },
+    { label: "Bảng giá điện", path: "/admin/electricity-prices" },
 ];
 
 function isMenuItemActive(
