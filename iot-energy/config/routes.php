@@ -76,6 +76,17 @@ return function (RouteBuilder $routes): void {
             $builder->get('/available-years', ['controller' => 'Statistics', 'action' => 'availableYears']);
         });
 
+        $builder->scope('/utilities', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+            $builder->get('/electricity-cost', ['controller' => 'Utilities', 'action' => 'electricityCost']);
+        });
+
+        $builder->scope('/utility-notes', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+            $builder->get('', ['controller' => 'UtilityNotes', 'action' => 'index']);
+            $builder->post('', ['controller' => 'UtilityNotes', 'action' => 'add',]);
+            $builder->patch('/{id}', ['controller' => 'UtilityNotes', 'action' => 'edit'])->setPass(['id']);
+            $builder->delete('/{id}', ['controller' => 'UtilityNotes', 'action' => 'delete'])->setPass(['id']);
+        });
+
         $builder->scope('/iot-devices', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
             $builder->get('', ['controller' => 'IotDevices', 'action' => 'index']);
             $builder->post('', ['controller' => 'IotDevices', 'action' => 'add']);

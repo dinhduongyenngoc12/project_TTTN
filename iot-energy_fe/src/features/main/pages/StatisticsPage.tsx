@@ -6,14 +6,17 @@ import MonthEnergyChart from "../../shared/components/chart/MonthEnergyChart";
 export default function StatisticsPage() {
     return (
         <UserLayout>
-            <header className="rounded-[32px] border border-white/70 bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-900/10 sm:px-8">
-                <p className="text-sm font-medium uppercase tracking-[0.26em] text-emerald-300">
+            <header className="rounded-2xl bg-slate-950 px-6 py-6 text-white">
+                <p className="text-sm font-medium uppercase tracking-wider text-emerald-300">
                     Thống kê
                 </p>
-                <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
+
+                <h1 className="mt-2 text-3xl font-semibold">
                     Thống kê điện năng tiêu thụ
-                </h2>
+                </h1>
             </header>
+
+
             <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <a
@@ -44,7 +47,7 @@ export default function StatisticsPage() {
                 </h3>
 
                 <HourPowerChart />
-                
+
             </section>
 
             <section id="day" className="mt-6 rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur">

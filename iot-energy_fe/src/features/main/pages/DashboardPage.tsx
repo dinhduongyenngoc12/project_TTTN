@@ -111,15 +111,14 @@ export default function DashboardPage() {
 
     return (
         <UserLayout>
-            <header className="rounded-[32px] border border-white/70 bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-900/10 sm:px-8">
-                <div>
-                    <p className="text-sm font-medium uppercase tracking-[0.26em] text-emerald-300">
-                        Dashboard
-                    </p>
-                    <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
-                        Theo dõi điện năng tiêu thụ
-                    </h2>
-                </div>
+            <header className="rounded-2xl bg-slate-950 px-6 py-6 text-white">
+                <p className="text-sm font-medium uppercase tracking-wider text-emerald-300">
+                    Trang chủ
+                </p>
+
+                <h1 className="mt-2 text-3xl font-semibold">
+                    Theo dõi điện năng tiêu thụ
+                </h1>
             </header>
 
             <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">

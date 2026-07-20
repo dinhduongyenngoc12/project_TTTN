@@ -25,20 +25,43 @@ class MonthSummariesTable extends Table
 
     public function validationDefault(Validator $validator): Validator
     {
-        $validator->integer('device_id')->requirePresence('device_id', 'create')->notEmptyString('device_id');
-        $validator->integer('year')->requirePresence('year', 'create')->notEmptyString('year');
-        $validator->integer('month')->requirePresence('month', 'create')->notEmptyString('month');
-        $validator->numeric('total_energy')->allowEmptyString('total_energy');
-        $validator->numeric('estimated_cost')->allowEmptyString('estimated_cost');
-        $validator->scalar('note')->allowEmptyString('note');
+        $validator
+            ->integer('device_id')
+            ->requirePresence('device_id', 'create')
+            ->notEmptyString('device_id');
+
+        $validator
+            ->integer('year')
+            ->requirePresence('year', 'create')
+            ->notEmptyString('year');
+
+        $validator
+            ->integer('month')
+            ->requirePresence('month', 'create')
+            ->notEmptyString('month');
+
+        $validator
+            ->decimal('total_energy')
+            ->requirePresence('total_energy', 'create')
+            ->notEmptyString('total_energy')
+            ->greaterThanOrEqual('total_energy', 0);
 
         return $validator;
     }
 
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->existsIn(['device_id'], 'Devices'), ['errorField' => 'device_id']);
-        $rules->add($rules->isUnique(['device_id', 'year', 'month']), ['errorField' => 'month']);
+        //Thiết bị phải tồn tại trước khi tạo dữ liệu tổng hợp tháng
+        $rules->add(
+            $rules->existsIn(['device_id'], 'Devices'),
+            ['errorField' => 'device_id']
+        );
+
+        //Mỗi thiết bị chỉ có một bản tổng hợp trong cùng năm và tháng
+        $rules->add(
+            $rules->isUnique(['device_id', 'year', 'month']),
+            ['errorField' => 'month']
+        );
 
         return $rules;
     }

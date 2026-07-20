@@ -60,22 +60,24 @@ export default function DeviceDetailPage() {
 
     return (
         <UserLayout>
-            <header className="rounded-[32px] border border-white/70 bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-900/10 sm:px-8">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-medium uppercase tracking-[0.26em] text-emerald-300">
-                            Chi tiết thiết bị
-                        </p>
+            <header className="flex items-center justify-between rounded-2xl bg-slate-950 px-6 py-6 text-white">
+                {/*trái */}
+                <div>
+                    <p className="text-sm font-medium uppercase tracking-wider text-emerald-300">
+                        Chi tiết thiết bị
+                    </p>
+                    <h1 className="mt-2 text-3xl font-semibold">
+                        {device?.name ?? "Thiết bị"}
+                    </h1>
 
-                        <h2 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">
-                            {device?.name ?? "Thiết bị"}
-                        </h2>
-                    </div>
+                </div>
 
+                {/*phải */}
+                <div>
                     <button
                         type="button"
                         onClick={() => navigate("/devices")}
-                        className="rounded-2xl bg-emerald-500 border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        className="inline-flex justify-center rounded-2xl bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
                     >
                         ← Quay lại
                     </button>
