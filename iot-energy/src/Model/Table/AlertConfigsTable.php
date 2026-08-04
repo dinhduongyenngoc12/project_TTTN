@@ -36,10 +36,20 @@ class AlertConfigsTable extends Table
 
         $validator
             ->numeric('default_threshold')
+            ->greaterThan(
+                'default_threshold',
+                0,
+                'Ngưỡng mặc định phải lớn hơn 0 W'
+            )
             ->allowEmptyString('default_threshold');
 
         $validator
             ->numeric('power_threshold')
+            ->greaterThan(
+                'power_threshold',
+                0,
+                'Ngưỡng cảnh báo phải lớn hơn 0 W'
+            )
             ->allowEmptyString('power_threshold');
 
         $validator

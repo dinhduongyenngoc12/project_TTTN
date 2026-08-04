@@ -86,17 +86,11 @@ implements AuthenticationServiceProviderInterface
         });
 
         $middlewareQueue
-            ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
-
-            ->add(new AssetMiddleware([
-                'cacheTime' => Configure::read('Asset.cacheTime'),
-            ]))
-
-            ->add(new RoutingMiddleware($this))
-
-            ->add(new BodyParserMiddleware())
-
-            // CORS middleware
+            /*
+             * CORS phải đứng ngoài ErrorHandler
+             * Nhờ vậy response lỗi 401 do Authentication tạo ra vẫn có header CORS,
+             * frontend mới đọc được error.response.status để xử lý refresh token
+             */
             ->add(function (
                 ServerRequestInterface $request,
                 RequestHandlerInterface $handler
@@ -120,6 +114,16 @@ implements AuthenticationServiceProviderInterface
                     ->withHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Device-Key')
                     ->withHeader('Access-Control-Allow-Credentials', 'true');
             })
+
+            ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
+
+            ->add(new AssetMiddleware([
+                'cacheTime' => Configure::read('Asset.cacheTime'),
+            ]))
+
+            ->add(new RoutingMiddleware($this))
+
+            ->add(new BodyParserMiddleware())
 
             ->add(new \Authentication\Middleware\AuthenticationMiddleware($this));
 

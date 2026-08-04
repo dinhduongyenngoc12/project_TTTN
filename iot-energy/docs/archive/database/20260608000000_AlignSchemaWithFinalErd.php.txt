@@ -12,7 +12,6 @@ class AlignSchemaWithFinalErd extends BaseMigration
     public function change(): void
     {
         $this->ensureUsers();
-        $this->ensureUserSocialAccounts();
         $this->ensureRefreshTokens();
         $this->ensureUserOtps();
         $this->ensureDevices();
@@ -45,25 +44,6 @@ class AlignSchemaWithFinalErd extends BaseMigration
         $this->addIndexIfMissing('users', ['email'], 'idx_users_email');
     }
 
-    private function ensureUserSocialAccounts(): void
-    {
-        if (!$this->hasTable('user_social_accounts')) {
-            $this->table('user_social_accounts')
-                ->addColumn('user_id', 'integer', ['null' => false])
-                ->addColumn('provider', 'string', ['limit' => 50, 'null' => false])
-                ->addColumn('provider_user_id', 'string', ['limit' => 191, 'null' => false])
-                ->addColumn('provider_email', 'string', ['limit' => 255, 'null' => true])
-                ->addColumn('avatar_url', 'text', ['null' => true])
-                ->addColumn('created_at', 'datetime', ['default' => null, 'null' => true])
-                ->addColumn('updated_at', 'datetime', ['default' => null, 'null' => true])
-                ->create();
-        }
-
-        $this->addColumnIfMissing('user_social_accounts', 'created_at', 'datetime', ['default' => null, 'null' => true]);
-        $this->addColumnIfMissing('user_social_accounts', 'updated_at', 'datetime', ['default' => null, 'null' => true]);
-        $this->addUniqueIndexIfSafe('user_social_accounts', ['user_id'], 'uniq_user_social_accounts_user_id');
-        $this->addUniqueIndexIfSafe('user_social_accounts', ['provider', 'provider_user_id'], 'uniq_user_social_accounts_provider_user');
-    }
 
     private function ensureRefreshTokens(): void
     {
@@ -301,7 +281,6 @@ class AlignSchemaWithFinalErd extends BaseMigration
     {
         foreach ([
             'users',
-            'user_social_accounts',
             'refresh_tokens',
             'user_otps',
             'devices',
@@ -321,7 +300,7 @@ class AlignSchemaWithFinalErd extends BaseMigration
 
     private function addMysqlForeignKeys(): void
     {
-        $this->addMysqlForeignKeyIfSafe('user_social_accounts', 'user_id', 'users', 'fk_user_social_accounts_user_id', 'CASCADE');
+       
         $this->addMysqlForeignKeyIfSafe('refresh_tokens', 'user_id', 'users', 'fk_refresh_tokens_user_id', 'CASCADE');
         $this->addMysqlForeignKeyIfSafe('devices', 'user_id', 'users', 'fk_devices_user_id', 'SET NULL');
         $this->addMysqlForeignKeyIfSafe('energy_logs', 'device_id', 'devices', 'fk_energy_logs_device_id', 'CASCADE');

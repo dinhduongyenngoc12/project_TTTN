@@ -35,7 +35,24 @@ class ElectricityPriceTiersTable extends Table
         $validator
             ->decimal('to_kwh')
             ->allowEmptyString('to_kwh')
-            ->greaterThanOrEqual('to_kwh', 0);
+            ->greaterThanOrEqual('to_kwh', 0)
+            ->add('to_kwh', 'greaterThanFromKwh', [
+                'rule' => function ($value, array $context): bool {
+                    if ($value === null || $value === '') {
+                        return true;
+                    }
+
+                    $fromKwh = $context['data']['from_kwh'] ?? null;
+
+                    //Rule decimal sẽ xử lý riêng nếu dữ liệu không phải số
+                    if (!is_numeric($value) || !is_numeric($fromKwh)) {
+                        return true;
+                    }
+
+                    return (float)$value > (float)$fromKwh;
+                },
+                'message' => 'Mức kết thúc phải lớn hơn mức bắt đầu',
+            ]);
 
         $validator
             ->decimal('price_kwh')

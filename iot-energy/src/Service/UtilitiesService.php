@@ -24,11 +24,11 @@ class UtilitiesService
     }
 
     /**
-     * Ước tính tiền điện của người dùng trong một tháng.
+     * Ước tính tiền điện của người dùng trong một tháng
      *
-     * @param int $userId ID người dùng đang đăng nhập.
-     * @param string $month Tháng cần tính theo định dạng YYYY-MM.
-     * @param int $vatRate Thuế VAT: 0, 8 hoặc 10.
+     * @param int $userId ID người dùng đang đăng nhập
+     * @param string $month Tháng cần tính theo định dạng YYYY-MM
+     * @param int $vatRate Thuế VAT: 0, 8 hoặc 10
      */
     public function estimateElectricityCost(
         int $userId,

@@ -39,6 +39,7 @@ export default function ThresholdConfigModal({
             return;
         }
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMode(config.mode);
         setPowerThreshold(
             config.power_threshold === null || config.power_threshold === undefined
@@ -188,7 +189,8 @@ export default function ThresholdConfigModal({
 
                             <input
                                 type="number"
-                                min="0"
+                                min="0.01"
+                                step="0.01"
                                 value={powerThreshold}
                                 onChange={(event) =>
                                     setPowerThreshold(event.target.value)

@@ -47,6 +47,11 @@ class AlertLogsTable extends Table
             ->numeric('threshold_value')
             ->requirePresence('threshold_value', 'create')     //co gui field threshold_value len khong {}
                                                                 //create - chi bat buoc khi newEntity()
+            ->greaterThan(
+                'threshold_value',
+                0,
+                'Ngưỡng tại thời điểm cảnh báo phải lớn hơn 0 W'
+            )
             ->notEmptyString('threshold_value');
 
         $validator

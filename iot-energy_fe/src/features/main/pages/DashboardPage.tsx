@@ -1,113 +1,77 @@
-import { useEffect, useState } from "react";
-import { useAuthLoginStore } from "../../../app/store/useAuthStore";
+import { NavLink } from "react-router-dom";
 import UserLayout from "../../../layouts/UserLayout";
-import {
-    getAlertConfigsApi,
-    getEnergyLogsApi,
-    getMeApi,
-    type UserProfile,
-} from "../../services/HomeService";
-import {
-    buildDashboardDevices,
-    buildDashboardSummary,
-    buildUserDashboardData,
-    type DashboardSummary,
-} from "../utils/dashboardUtils";
-import { getDevicesApi } from "../../../api/deviceApi";
+import { useDashboard } from "../hooks/useDashboard";
 
-const emptySummary: DashboardSummary = {
-    totalPower: 0,
-    activeDevices: 0,
-    overThresholdDevices: 0,
-    totalDevices: 0,
-};
+const quickLinks = [
+    {
+        label: "Quản lý thiết bị",
+        description: "Thêm thiết bị, xem chi tiết và cập nhật các thiết bị đang theo dõi.",
+        path: "/devices",
+    },
+    {
+        label: "Xem thống kê",
+        description: "Theo dõi dữ liệu điện năng thống kê theo giờ, ngày và tháng.",
+        path: "/statistics",
+    },
+    {
+        label: "Xem cảnh báo",
+        description: "Kiểm tra các lần thiết bị vượt ngưỡng.",
+        path: "/alerts",
+    },
+];
+
+function formatEnergy(value: number): string {
+    return new Intl.NumberFormat("vi-VN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 3,
+    }).format(value) + " kWh";
+}
+
+function formatPower(value: number): string {
+    return new Intl.NumberFormat("vi-VN", {
+        maximumFractionDigits: 2,
+    }).format(value) + " W";
+}
+
+function formatDateTime(value: string | null): string {
+    if (!value) {
+        return "-";
+    }
+
+    return new Date(value).toLocaleString("vi-VN");
+}
+
+function getTrendText(
+    trend: "increase" | "decrease" | "stable",
+): string {
+    if (trend === "increase") {
+        return "Tăng";
+    }
+
+    if (trend === "decrease") {
+        return "Giảm";
+    }
+
+    return "Không đổi";
+}
+
+function getTrendTextClass(
+    trend: "increase" | "decrease" | "stable",
+): string {
+    if (trend === "increase") {
+        return "text-rose-600";
+    }
+
+    if (trend === "decrease") {
+        return "text-emerald-600";
+    }
+
+    return "text-slate-600";
+}
 
 export default function DashboardPage() {
-    const { username, email } = useAuthLoginStore();
-    //luu user lay tu API /api/auth/me.
-    const [user, setUser] = useState<UserProfile | null>(null);
-    //luu du lieu tong quan he thong
-    const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
-    //loading lan dau
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function fetchDashboardData(showLoading = false) {
-            if (showLoading) {
-                setLoading(true);
-            }
-
-            setError("");
-
-            try {
-                //Promise.all goi nhieu api 1 luc
-                const [meData, devicesData, energyLogsData, alertConfigsData] =
-                    await Promise.all([
-                        getMeApi(),
-                        getDevicesApi(),
-                        getEnergyLogsApi(),
-                        getAlertConfigsApi(),
-                    ]);
-
-                //user da roi khoi trang thi khong setState nua
-                if (!isMounted) {
-                    return;
-                }
-
-                //user hien tai
-                const dashboardData = buildUserDashboardData({
-                    userId: meData.user?.id,
-                    devices: devicesData.devices ?? [],
-                    energyLogs: energyLogsData.energyLogs ?? [],
-                    alertConfigs:
-                        alertConfigsData.alertConfigs ??
-                        alertConfigsData.thresholds ??
-                        [],
-                });
-
-                //devices + energyLogs + alertConfigs
-                const dashboardDevices = buildDashboardDevices(
-                    dashboardData.devices,
-                    dashboardData.energyLogs,
-                    dashboardData.alertConfigs,
-                );
-
-                setUser(meData.user ?? null);
-                setSummary(buildDashboardSummary(dashboardDevices));
-            } catch {
-                if (!isMounted) {
-                    return;
-                }
-
-                setUser(null);
-                setSummary(emptySummary);
-                setError("Không thể tải dữ liệu trang chủ. Vui lòng thử lại.");
-            } finally {
-                if (isMounted && showLoading) {
-                    setLoading(false);
-                }
-            }
-        }
-
-        //vao trag lan dau co loading
-        void fetchDashboardData(true);
-
-        //trang realtime, lan refresh sau thi chay ngam, khong loading
-        const intervalId = window.setInterval(() => {
-            void fetchDashboardData(false);
-        }, 10000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-        };
-    }, []);
-
-    const displayName = user?.username || username || "User";
-    const displayEmail = user?.email || email || "No email";
+    const { data, isLoading, isError } = useDashboard();
+    const dashboard = data?.data;
 
     return (
         <UserLayout>
@@ -117,82 +81,221 @@ export default function DashboardPage() {
                 </p>
 
                 <h1 className="mt-2 text-3xl font-semibold">
-                    Theo dõi điện năng tiêu thụ
+                    Tổng quan hệ thống
                 </h1>
             </header>
 
-            <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-                <article className="rounded-[28px] border border-emerald-100 bg-white/90 p-6 shadow-xl shadow-emerald-100/60 backdrop-blur">
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">
-                        Người dùng
-                    </p>
-
-                    <div className="mt-5">
-                        <h3 className="text-2xl font-bold text-slate-900">
-                            {displayName}
-                        </h3>
-                        <p className="mt-2 text-sm text-slate-500">
-                            {displayEmail}
-                        </p>
-                    </div>
-                </article>
-
-                <article className="rounded-[28px] border border-sky-100 bg-white/90 p-6 shadow-xl shadow-sky-100/60 backdrop-blur">
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-600">
-                        Trạng thái hệ thống
-                    </p>
-
-                    {loading ? (
-                        <p className="mt-5 text-sm text-slate-500">
-                            Đang tải dữ liệu...
-                        </p>
-                    ) : (
-                        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                            <div className="rounded-3xl bg-slate-50 p-4">
-                                <p className="text-sm text-slate-500">
-                                    Tổng thiết bị
-                                </p>
-                                <p className="mt-2 text-3xl font-bold text-slate-900">
-                                    {summary.totalDevices}
-                                </p>
-                            </div>
-
-                            <div className="rounded-3xl bg-slate-50 p-4">
-                                <p className="text-sm text-slate-500">
-                                    Công suất hiện tại
-                                </p>
-                                <p className="mt-2 text-3xl font-bold text-slate-900">
-                                    {Math.round(summary.totalPower)} W
-                                </p>
-                            </div>
-
-                            <div className="rounded-3xl bg-slate-50 p-4">
-                                <p className="text-sm text-slate-500">
-                                    Cảnh báo đang mở
-                                </p>
-                                <p className="mt-2 text-3xl font-bold text-rose-600">
-                                    {summary.overThresholdDevices}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </article>
-            </section>
-
-            {error && (
-                <section className="mt-6 rounded-[28px] border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700">
-                    {error}
+            {isLoading && (
+                <section className="mt-6 rounded-2xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500">
+                    Đang tải dữ liệu...
                 </section>
             )}
 
-            {summary.overThresholdDevices > 0 && (
-                <section className="mt-6 rounded-[28px] border border-rose-200 bg-rose-50 px-6 py-5 text-rose-900 shadow-lg shadow-rose-100/70">
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em]">
-                        Cảnh báo
-                    </p>
-                    <p className="mt-2 text-base font-medium">
-                        Có {summary.overThresholdDevices} thiết bị đang vượt ngưỡng tiêu thụ cài đặt
-                    </p>
+            {isError && (
+                <section className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700">
+                    Không thể tải dữ liệu trang chủ. Vui lòng thử lại.
+                </section>
+            )}
+
+            {!isLoading && !isError && dashboard && (
+                <>
+                    <section className="mt-6 grid gap-6 lg:grid-cols-3">
+                        <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                            <p className="text-sm font-medium text-slate-500">
+                                Người dùng
+                            </p>
+
+                            <h2 className="mt-3 text-xl font-semibold text-slate-900">
+                                {dashboard.user.username}
+                            </h2>
+
+                            <p className="mt-1 text-sm text-slate-500">
+                                {dashboard.user.email}
+                            </p>
+                        </article>
+
+                        <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                            <p className="text-sm font-medium text-slate-500">
+                                Tổng thiết bị
+                            </p>
+
+                            <p className="mt-3 text-3xl font-semibold text-slate-900">
+                                {dashboard.device_count}
+                            </p>
+                        </article>
+
+                        <article className="rounded-2xl border border-slate-200 bg-white p-6">
+                            <p className="text-sm font-medium text-slate-500">
+                                Điện năng hôm nay
+                            </p>
+
+                            <p className="mt-3 text-3xl font-semibold text-slate-900">
+                                {formatEnergy(
+                                    dashboard.energy_trend.today_energy,
+                                )}
+                            </p>
+                        </article>
+                    </section>
+
+                    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
+                        <h2 className="text-xl font-semibold text-slate-900">
+                            So sánh điện năng
+                        </h2>
+
+                        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                            <div className="rounded-xl bg-slate-50 p-4">
+                                <p className="text-sm text-slate-500">
+                                    Hôm nay
+                                </p>
+                                <p className="mt-2 text-xl font-semibold text-slate-900">
+                                    {formatEnergy(
+                                        dashboard.energy_trend.today_energy,
+                                    )}
+                                </p>
+                            </div>
+
+                            <div className="rounded-xl bg-slate-50 p-4">
+                                <p className="text-sm text-slate-500">
+                                    Hôm qua
+                                </p>
+                                <p className="mt-2 text-xl font-semibold text-slate-900">
+                                    {formatEnergy(
+                                        dashboard.energy_trend.yesterday_energy,
+                                    )}
+                                </p>
+                            </div>
+
+                            <div className="rounded-xl bg-slate-50 p-4">
+                                <p className="text-sm text-slate-500">
+                                    Chênh lệch
+                                </p>
+
+                                <p className="mt-2 text-xl font-semibold">
+                                    <span
+                                        className={getTrendTextClass(
+                                            dashboard.energy_trend.trend,
+                                        )}
+                                    >
+                                        {getTrendText(
+                                            dashboard.energy_trend.trend,
+                                        )}
+
+                                        {dashboard.energy_trend.percentage !== null && (
+                                            <>
+                                                {" "}
+                                                {Math.abs(
+                                                    dashboard.energy_trend.percentage,
+                                                ).toFixed(2)}
+                                                %
+                                            </>
+                                        )}
+                                    </span>
+                                </p>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    {formatEnergy(
+                                        Math.abs(
+                                            dashboard.energy_trend.difference,
+                                        ),
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="text-xl font-semibold text-slate-900">
+                                Cảnh báo gần đây
+                            </h2>
+
+                            <NavLink
+                                to="/alerts"
+                                className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                            >
+                                Xem tất cả
+                            </NavLink>
+                        </div>
+
+                        {dashboard.recent_alerts.length === 0 ? (
+                            <p className="mt-5 text-sm text-slate-500">
+                                Chưa có cảnh báo nào.
+                            </p>
+                        ) : (
+                            <div className="mt-5 overflow-x-auto">
+                                <table className="w-full min-w-[720px] text-left text-sm">
+                                    <thead className="border-b border-slate-200 text-slate-500">
+                                        <tr>
+                                            <th className="px-3 py-3 font-medium">
+                                                Thiết bị
+                                            </th>
+                                            <th className="px-3 py-3 font-medium">
+                                                Công suất
+                                            </th>
+                                            <th className="px-3 py-3 font-medium">
+                                                Ngưỡng
+                                            </th>
+                                            <th className="px-3 py-3 font-medium">
+                                                Thời gian
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {dashboard.recent_alerts.map(
+                                            (alert) => (
+                                                <tr
+                                                    key={alert.id}
+                                                    className="border-b border-slate-100 last:border-0"
+                                                >
+                                                    <td className="px-3 py-4 font-medium text-slate-900">
+                                                        {alert.device_name}
+                                                    </td>
+                                                    <td className="px-3 py-4 text-rose-600">
+                                                        {formatPower(
+                                                            alert.power_value,
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-4 text-slate-600">
+                                                        {formatPower(
+                                                            alert.threshold_value,
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-4 text-slate-600">
+                                                        {formatDateTime(
+                                                            alert.created_at,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ),
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="mt-6 grid gap-4 md:grid-cols-3">
+                        {quickLinks.map((item) => (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                className="rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-emerald-300 hover:bg-emerald-50"
+                            >
+                                <h2 className="font-semibold text-slate-900">
+                                    {item.label}
+                                </h2>
+                                <p className="mt-2 text-sm leading-6 text-slate-500">
+                                    {item.description}
+                                </p>
+                            </NavLink>
+                        ))}
+                    </section>
+                </>
+            )}
+
+            {!isLoading && !isError && !dashboard && (
+                <section className="mt-6 rounded-2xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500">
+                    Chưa có dữ liệu để hiển thị.
                 </section>
             )}
         </UserLayout>

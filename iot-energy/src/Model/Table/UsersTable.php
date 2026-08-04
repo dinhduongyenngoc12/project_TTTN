@@ -13,7 +13,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\DevicesTable&\Cake\ORM\Association\HasMany $Devices
  * @property \App\Model\Table\RefreshTokensTable&\Cake\ORM\Association\HasMany $RefreshTokens
- * @property \App\Model\Table\UserSocialAccountsTable&\Cake\ORM\Association\HasOne $UserSocialAccounts
  *
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
@@ -50,10 +49,6 @@ class UsersTable extends Table
         ]);
 
         $this->hasMany('RefreshTokens', [
-            'foreignKey' => 'user_id',
-        ]);
-
-        $this->hasOne('UserSocialAccounts', [
             'foreignKey' => 'user_id',
         ]);
     }

@@ -1,7 +1,7 @@
 import { getData, patchData } from "../services/http";
 
 export type AlertMode = "auto" | "manual";
-export type LearningStatus = "learning" | "learned_3d" | "learned_7d";
+export type LearningStatus = "learning" | "learned_3d" | "learned_7d" | "adaptive";
 
 export type AlertConfigItem = {
     id: number;

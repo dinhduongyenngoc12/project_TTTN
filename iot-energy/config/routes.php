@@ -17,15 +17,6 @@ return function (RouteBuilder $routes): void {
             $builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout'], ['_method' => 'POST']);
             $builder->connect('/me', ['controller' => 'Users', 'action' => 'me'], ['_method' => 'GET']);
             $builder->connect('/refresh', ['controller' => 'Users', 'action' => 'refresh'], ['_method' => 'POST']);
-            $builder->connect('/social/google',
-                ['controller' => 'Users', 'action' => 'socialLogin', 'provider' => 'google'],
-                ['pass' => ['provider'], '_method' => 'GET']           
-            );
-
-            $builder->connect('/social/google/callback',
-                ['controller' => 'Users', 'action' => 'socialCallback'],
-                ['pass' => ['provider'], '_method' => 'GET']
-            );
 
             $builder->connect('/forgot-password', ['controller' => 'Users', 'action' => 'forgotPassword'], ['_method' => 'POST']);
 
@@ -34,6 +25,12 @@ return function (RouteBuilder $routes): void {
 
         $builder->scope('/users', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
             $builder->connect('', ['controller' => 'Users', 'action' => 'index'], ['_method' => 'GET']);
+            $builder->get('/{id}', ['controller' => 'Users', 'action' => 'view'])->setPass(['id']);
+        });
+
+        $builder->scope('/dashboard', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+            $builder->get('', ['controller' => 'Dashboard', 'action' => 'index']);
+            $builder->get('/system', ['controller' => 'Dashboard', 'action' => 'systemOverview']);
         });
 
         $builder->scope('/devices', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
@@ -54,11 +51,16 @@ return function (RouteBuilder $routes): void {
 
         });
 
-         $builder->scope('/alert-configs', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+        $builder->scope('/alert-configs', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
             $builder->get('', ['controller' => 'AlertConfigs', 'action' => 'index']);
             $builder->patch('/{id}', ['controller' => 'AlertConfigs', 'action' => 'edit'])->setPass(['id']);
             $builder->put('/{id}', ['controller' => 'AlertConfigs', 'action' => 'edit'])->setPass(['id']);
             $builder->get('/{id}', ['controller' => 'AlertConfigs', 'action' => 'view'])->setPass(['id']);
+        });
+
+        $builder->scope('/alerts', ['prefix' => 'Api'], function (RouteBuilder $builder): void {
+            $builder->get('', ['controller' => 'Alerts', 'action' => 'index']);
+            $builder->get('/system', ['controller' => 'Alerts', 'action' => 'systemMonitoring']);
         });
 
         $builder->scope('/price-tiers', ['prefix' => 'Api'], function (RouteBuilder $builder): void {

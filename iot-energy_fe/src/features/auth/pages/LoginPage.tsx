@@ -1,20 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "../../shared/components/Button";
 import { Input } from "../../shared/components/Input";
 import { useLoginForm } from "../hooks/useAuthForm";
-import { ButtonSocial } from "../../shared/components/ButtonSocial";
-//import { useOtpData } from "../../../app/store/useAuthStore";
 import { Link } from "react-router-dom";
 import { BackGround } from "../../shared/components/BackGround";
+import {
+    clearAuthNotice,
+    getAuthNotice,
+} from "../../../app/utils/authSession";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [authNotice, setAuthNotice] = useState(() => getAuthNotice());
 
     const { handleLogin, isPending, msg } = useLoginForm();
 
-    const handleSubmit = (event: any) => {
+    //Thông báo được đọc một lần sau khi interceptor chuyển người dùng về trang đăng nhập.
+    useEffect(() => {
+        if (authNotice) {
+            clearAuthNotice();
+        }
+    }, [authNotice]);
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setAuthNotice("");
 
         handleLogin({
             email,
@@ -35,16 +46,22 @@ export default function LoginPage() {
                     <div className="mt-12 flex flex-col items-center">
                         <div className="mt-8 w-full flex-1">
                             <div className="flex flex-col items-center">
-                                <ButtonSocial />
+
                             </div>
 
                             <div className="my-12 border-b text-center">
                                 <div className="inline-block translate-y-1/2 bg-white px-2 text-sm font-medium leading-none tracking-wide text-gray-600">
-                                    hoặc Đăng nhập bằng Email
+                                    Đăng nhập bằng Email
                                 </div>
                             </div>
 
                             <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
+                                {authNotice && (
+                                    <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                                        {authNotice}
+                                    </div>
+                                )}
+
                                 <Input
                                     type={"email"}
                                     name={"email"}

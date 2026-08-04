@@ -14,6 +14,8 @@ import {
     useResendOTPData,
 } from "./useAuthData";
 import { getDefaultRouteByRole } from "../../../app/utils/auth";
+import { queryClient } from "../../../services/queryClient";
+import { logoutApi } from "../../services/LoginService";
 
 type ApiErrorResponse = {
     message?: string;
@@ -223,23 +225,36 @@ export function useLogoutForm() {
     const clearAuthLogin = useAuthLoginStore((state) => state.clearAuthLogin);
     const clearOtpData = useOtpData((state) => state.clearOtpData);
     const clearRefreshToken = useRefreshTokenStore((state) => state.clearRefreshToken);
+    const refreshToken = useRefreshTokenStore((state) => state.refreshToken);
     const clearUserIdentify = useAuthOTPStore((state) => state.clearUserIdentify);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         const isConfirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất không?");
 
         if (!isConfirmed) {
             return;
         }
 
-        clearAuthLogin();
-        clearOtpData();
-        clearRefreshToken();
-        clearUserIdentify();
+        try {
+            if (refreshToken) {
+                // Thu hồi refresh token trên backend trước khi xóa bản local.
+                await logoutApi(refreshToken);
+            }
+        } finally {
+            /*
+             * Dù backend tạm thời không phản hồi, thiết bị hiện tại vẫn phải
+             * xóa phiên cục bộ để người dùng hoàn tất thao tác đăng xuất.
+             */
+            queryClient.clear();
+            clearAuthLogin();
+            clearOtpData();
+            clearRefreshToken();
+            clearUserIdentify();
 
-        navigate("/", {
-            replace: true,
-        });
+            navigate("/", {
+                replace: true,
+            });
+        }
     };
 
     return {

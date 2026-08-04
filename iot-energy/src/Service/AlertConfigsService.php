@@ -66,6 +66,22 @@ class AlertConfigsService
             );
         }
 
+        $validationResult = $this->validateUpdateRequest(
+            $alertConfig,
+            $requestData
+        );
+
+        if (!$validationResult['valid']) {
+            return $this->error(
+                'Dữ liệu cấu hình ngưỡng không hợp lệ.',
+                422,
+                $validationResult['errors'],
+                $alertConfig
+            );
+        }
+
+        // Chỉ đưa dữ liệu đã chuẩn hóa vào entity.
+        $requestData = $validationResult['data'];
         $data = $this->buildUpdateData($alertConfig, $requestData);
 
         $alertConfig = $this->AlertConfigs->patchEntity($alertConfig, $data);
@@ -123,11 +139,56 @@ class AlertConfigsService
          * Khi quay lại auto, power_threshold phải bám theo default_threshold.
          * Nếu hệ thống chưa học được ngưỡng mặc định thì giữ nguyên ngưỡng tạm hiện có.
          */
-        if ($alertConfig->default_threshold !== null) {
+        if (
+            $alertConfig->default_threshold !== null
+            && (float)$alertConfig->default_threshold > 0
+        ) {
             $data['power_threshold'] = $alertConfig->default_threshold;
+        } elseif (
+            $alertConfig->power_threshold !== null
+            && (float)$alertConfig->power_threshold <= 0
+        ) {
+            // Dọn giá trị 0 hoặc âm cũ về null, chờ hệ thống học ngưỡng mới.
+            $data['power_threshold'] = null;
         }
 
         return $data;
+    }
+
+    // Kiểm tra request trước khi patch để trả lỗi nghiệp vụ dễ hiểu.
+    private function validateUpdateRequest(
+        AlertConfig $alertConfig,
+        array $requestData
+    ): array {
+        $errors = [];
+        $mode = strtolower(trim((string)(
+            $requestData['mode'] ?? $alertConfig->mode
+        )));
+
+        if (!in_array($mode, ['auto', 'manual'], true)) {
+            $errors['mode'] = 'Chế độ ngưỡng chỉ nhận auto hoặc manual.';
+        }
+
+        $normalizedData = [
+            'mode' => $mode,
+        ];
+
+        if ($mode === 'manual') {
+            $threshold = $requestData['power_threshold'] ?? null;
+
+            if (!is_numeric($threshold) || (float)$threshold <= 0) {
+                $errors['power_threshold'] =
+                    'Ngưỡng cảnh báo thủ công phải lớn hơn 0 W.';
+            } else {
+                $normalizedData['power_threshold'] = (float)$threshold;
+            }
+        }
+
+        return [
+            'valid' => $errors === [],
+            'errors' => $errors,
+            'data' => $normalizedData,
+        ];
     }
 
     

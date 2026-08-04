@@ -254,7 +254,7 @@ month_summaries
 electricity_price_tiers
 ```
 
-Ngoài ra còn có thể có các bảng authentication như `refresh_tokens`, `user_otps`, `user_social_accounts` và `password_reset_tokens`.
+Ngoài ra còn có thể có các bảng authentication như `refresh_tokens`, `user_otps` và `password_reset_tokens`.
 
 ## 12. Kiểm tra file tạm
 

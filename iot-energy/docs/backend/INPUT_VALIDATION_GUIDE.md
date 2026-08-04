@@ -566,14 +566,6 @@ Kiểm tra:
 
 Điểm cần sửa: role chưa có `inList(['user', 'admin'])` và flow register đang cho phép mass assign role.
 
-### 16.2. `UserSocialAccountsTable`
-
-Kiểm tra:
-
-- `user_id` là integer và bắt buộc.
-- Provider và provider user ID bắt buộc, giới hạn độ dài.
-- Email provider và avatar có thể rỗng.
-- Rules: user tồn tại; cặp provider/provider user ID duy nhất; mỗi user chỉ có một social account theo rule hiện tại.
 
 ### 16.3. `UserOtpsTable`
 

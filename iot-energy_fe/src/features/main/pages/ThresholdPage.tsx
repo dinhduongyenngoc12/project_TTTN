@@ -118,10 +118,10 @@ export default function ThresholdPage() {
                                 <tr className="border-b border-slate-200 text-slate-500">
                                     <th className="py-3 pr-4">Thiết bị</th>
                                     <th className="py-3 pr-4">Loại</th>
-                                    <th className="py-3 pr-4">Ngưỡng mặc định</th>
-                                    <th className="py-3 pr-4">Ngưỡng cảnh báo hiện tại</th>
+                                    <th className="py-3 pr-4">Ngưỡng hệ thống đề xuất</th>
+                                    <th className="py-3 pr-4">Ngưỡng đang áp dụng</th>
                                     <th className="py-3 pr-4">Chế độ</th>
-                                    <th className="py-3 pr-4">Trạng thái học</th>
+                                    <th className="py-3 pr-4">Trạng thái tính ngưỡng tự động</th>
                                     <th className="py-3 pr-4 text-right">Thao tác</th>
                                 </tr>
                             </thead>

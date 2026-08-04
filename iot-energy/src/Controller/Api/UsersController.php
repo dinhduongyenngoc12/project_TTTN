@@ -4,13 +4,12 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
-use App\Provider\AuthSocialProvider;
-use App\Service\SocialCallbackService;
 use App\Service\TokenService;
 use App\Service\MailService;
 
 use Cake\Event\EventInterface;
 use Cake\I18n\FrozenTime;
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -35,10 +34,9 @@ class UsersController extends AppController
             'login',
             'register',
             'checkOTP',
-            'socialLogin',
-            'socialCallback',
             'resendOTP',
             'refresh',
+            'logout',
             'forgotPassword',
             'resetPassword'
         ]);
@@ -52,59 +50,88 @@ class UsersController extends AppController
             return;
         }
 
-        $totalUsers = $this->Users->find()
+        $query = $this->Users->find();
+
+        // Chỉ lấy thông tin cần cho bảng quản trị và đếm thiết bị theo người dùng.
+        $users = $query
+            ->select([
+                'id' => 'Users.id',
+                'username' => 'Users.username',
+                'email' => 'Users.email',
+                'role' => 'Users.role',
+                'device_count' => $query->func()->count('Devices.id'),
+            ])
+            ->leftJoinWith('Devices')
             ->where(['Users.role !=' => 'admin'])
-            ->count();
+            ->groupBy([
+                'Users.id',
+                'Users.username',
+                'Users.email',
+                'Users.role',
+            ])
+            ->orderBy(['Users.id' => 'DESC'])
+            ->all()
+            ->toList();
 
         $this->renderJson([
             'status' => 'success',
-            'totalUsers' => $totalUsers,
+            'totalUsers' => count($users),
+            'users' => $users,
         ]);
     }
 
-    //SOCIAL_LOGIN 
-    public function socialLogin(string $provider)
+    public function view(int $id): void
     {
-        $providerAction = new AuthSocialProvider();
-        $authUrl = $providerAction->execute($provider, $this->request->getSession());
+        $this->request->allowMethod(['get']);
 
-        return $this->redirect($authUrl);
-    }
-
-    //SOCIAL_LOGIN            
-    public function socialCallback(string $provider)
-    {
-        $code = $this->request->getQuery('code');
-        $state = $this->request->getQuery('state');
-
-        if (!$code) {
-            $this->Flash->error('Đăng nhập thất bại');
-
-            return $this->redirect(['action' => 'login']);
+        if (!$this->requireAdmin()) {
+            return;
         }
 
-        try {
-            $callbackAction = new SocialCallbackService();
-            $userData = $callbackAction->execute($provider, $code, $state, $this->request->getSession());
+        // Không trả password, token hoặc API key của bộ đo trong trang quản trị.
+        $user = $this->Users->find()
+            ->select([
+                'Users.id',
+                'Users.username',
+                'Users.email',
+                'Users.role',
+            ])
+            ->contain([
+                'Devices' => function (SelectQuery $query): SelectQuery {
+                    return $query
+                        ->select([
+                            'Devices.id',
+                            'Devices.user_id',
+                            'Devices.name',
+                            'Devices.device_type',
+                            'Devices.rated_power',
+                            'Devices.status',
+                            'Devices.activated_at',
+                        ])
+                        ->orderBy(['Devices.id' => 'DESC']);
+                },
+            ])
+            ->where([
+                'Users.id' => $id,
+                'Users.role !=' => 'admin',
+            ])
+            ->first();
 
-            //social acccount
-            $user = $this->fetchTable('Users')->findOrCreateSocialUser($userData);
+        if ($user === null) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không tìm thấy người dùng',
+            ], 404);
 
-            $this->request->getSession()->write('Auth.User', $user);
-            $this->Flash->success(" {$userData['name']}!");
-            return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
-
-            
-        } catch (\Exception $e) {
-            $this->Flash->error('ERROR: ' . $e->getMessage());
-
-            return $this->redirect(['action' => 'login']);
+            return;
         }
 
-        //Exception: Tìm trong namespace hiện tại 
-        // \ExceptionTìm ở global namespace (root)
-        //use Exception + ExceptionImport vào namespace hiện tại rồi dùng
+        $this->renderJson([
+            'status' => 'success',
+            'user' => $user,
+        ]);
     }
+
 
     //LOGIN
     public function login(): void
@@ -418,7 +445,28 @@ class UsersController extends AppController
     public function logout(): void
     {
         $this->request->allowMethod(['post']);
-        $this->Authentication->logout();
+
+        $refreshToken = trim((string)$this->request->getData('refresh', ''));
+
+        if ($refreshToken === '') {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Thiếu refresh token',
+            ], 400);
+
+            return;
+        }
+
+        $tokenService = new TokenService();
+
+        if (!$tokenService->revokeRefreshToken($refreshToken)) {
+            $this->renderJson([
+                'status' => 'error',
+                'message' => 'Không thể thu hồi refresh token',
+            ], 500);
+
+            return;
+        }
 
         $this->renderJson([
             'status' => 'success',

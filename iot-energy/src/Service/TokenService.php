@@ -19,7 +19,7 @@ class TokenService
      //Access token: token gọi API hàng ngày
 
 
-    protected int $expiresIn = 10800;
+    protected int $expiresIn = 21600;   //6h
 
     //Refresh token: chỉ dùng để xin access token mới khi access token cũ hết hạn 
 
@@ -120,5 +120,32 @@ class TokenService
             'token' => $this->createToken($user),
             'refresh' => $this->createRefreshToken($user),
         ];
+    }
+
+    //Thu hồi đúng refresh token của phiên đang đăng xuất
+    public function revokeRefreshToken(string $refreshToken): bool
+    {
+        $refreshTokenTable = TableRegistry::getTableLocator()
+            ->get('RefreshTokens');
+
+        $storedToken = $refreshTokenTable->find()
+            ->where([
+                'token' => $refreshToken,
+                'is_revoked' => false,
+            ])
+            ->first();
+
+        /*
+         * Logout có tính idempotent: token không tồn tại hoặc đã bị thu hồi
+         * vẫn được xem là phiên đã kết thúc, không tiết lộ trạng thái token.
+         */
+        if (!$storedToken) {
+            return true;
+        }
+
+        $storedToken->is_revoked = true;
+        $storedToken->last_used_at = FrozenTime::now();
+
+        return (bool)$refreshTokenTable->save($storedToken);
     }
 }
