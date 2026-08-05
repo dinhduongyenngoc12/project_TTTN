@@ -40,7 +40,10 @@ export default function DevicePage() {
 
     const onlineDevices = devices.filter(
         (device) =>
-            getConnectionStatus(device.iot_last_seen_at) === "online",
+            getConnectionStatus(
+                device.iot_last_seen_at,
+                device.status,
+            ) === "online",
     ).length;
 
     async function loadDevices() {        //GET /api/devices
@@ -239,6 +242,7 @@ export default function DevicePage() {
                         {devices.map((device) => {
                             const connectionStatus = getConnectionStatus(
                                 device.iot_last_seen_at,
+                                device.status,
                             );
                             const isOnline = connectionStatus === "online";
 
@@ -289,7 +293,9 @@ export default function DevicePage() {
                                         <p>
                                             Lần gửi cuối:{" "}
                                             <span className="font-semibold text-slate-800">
-                                                {formatDeviceDateTime(device.iot_last_seen_at)}
+                                                {device.status === "active"
+                                                    ? formatDeviceDateTime(device.iot_last_seen_at)
+                                                    : "Không còn theo dõi"}
                                             </span>
                                         </p>
                                     </div>

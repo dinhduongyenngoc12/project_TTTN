@@ -101,9 +101,13 @@ CREATE TABLE `devices` (
   `activated_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
+  `active_iot_device_id` int GENERATED ALWAYS AS (
+    CASE WHEN `status` = 'active' THEN `iot_device_id` ELSE NULL END
+  ) STORED,
   PRIMARY KEY (`id`),
   KEY `fk_devices_users` (`user_id`),
   KEY `idx_devices_iot_device_status` (`iot_device_id`,`status`),
+  UNIQUE KEY `uq_devices_one_active_per_iot` (`active_iot_device_id`),
   CONSTRAINT `fk_devices_iot_device` FOREIGN KEY (`iot_device_id`) REFERENCES `iot_devices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_devices_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

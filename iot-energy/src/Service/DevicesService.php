@@ -35,7 +35,12 @@ class DevicesService
                 'iot' => [
                     'table' => 'iot_devices',
                     'type' => 'LEFT',
-                    'conditions' => 'iot.id = Devices.iot_device_id',
+                    // Thiết bị đã inactive chỉ là lịch sử và không còn được
+                    // nhận trạng thái kết nối hiện tại của bộ đo.
+                    'conditions' => [
+                        'iot.id = Devices.iot_device_id',
+                        'Devices.status' => 'active',
+                    ],
                 ],
             ])
             ->select([
@@ -187,6 +192,9 @@ class DevicesService
                     $this->Devices->updateAll(
                         [
                             'status' => 'inactive',
+                            // Ngắt liên kết hiện tại. Lịch sử số đo vẫn thuộc
+                            // device cũ thông qua energy_logs.device_id.
+                            'iot_device_id' => null,
                         ],
                         [
                             'iot_device_id' => $lockedIotDevice->id,
@@ -362,7 +370,11 @@ class DevicesService
                 return null;
             }
 
-        $lastSeenAt = $device->iot_device?->last_seen_at;
+        // Chỉ device active mới được kế thừa trạng thái kết nối của bộ đo.
+        // Device inactive phải luôn offline và không có "lần gửi cuối" mới.
+        $lastSeenAt = $device->status === 'active'
+            ? $device->iot_device?->last_seen_at
+            : null;
 
         $latestLog = $energyLogsTable->find()     //lấy dl mới nhất
             ->where([

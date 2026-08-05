@@ -32,7 +32,14 @@ export const DEVICE_STATUS_LABELS: Record<DeviceStatus, string> = {
 
 export function getConnectionStatus(
     lastSeenAt?: string | null,
+    deviceStatus: DeviceStatus = "active",
 ): "online" | "offline" {
+    // Device inactive không còn liên kết hoạt động với bộ đo nên không được
+    // suy ra online từ last_seen_at lịch sử hoặc dữ liệu API cũ.
+    if (deviceStatus !== "active") {
+        return "offline";
+    }
+
     if (!lastSeenAt) {
         return "offline";
     }
