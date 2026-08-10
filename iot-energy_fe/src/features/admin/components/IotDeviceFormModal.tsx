@@ -36,7 +36,7 @@ export default function IotDeviceFormModal({
 
         //Kiểm tra cơ bản tại frontend trước khi gửi request
         if (normalizedApiKey === "") {
-            setError("Vui lòng nhập API Key của bộ đo IoT.");
+            setError("Vui lòng nhập tên định danh IOT Key của bộ đo IoT.");
             return;
         }
 
@@ -92,14 +92,14 @@ export default function IotDeviceFormModal({
 
                 <div className="mt-6">
                     <label
-                        htmlFor="iot-api-key"
+                        htmlFor="iot-iot-key"
                         className="block text-sm font-medium text-slate-700"
                     >
                         API Key
                     </label>
 
                     <input
-                        id="iot-api-key"
+                        id="iot-iot-key"
                         type="text"
                         value={apiKey}
                         onChange={(event) => {

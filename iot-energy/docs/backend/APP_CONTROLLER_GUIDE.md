@@ -178,7 +178,7 @@ ESP32 không đăng nhập bằng tài khoản người dùng và không có JWT
 
 ```http
 POST /api/energy-logs
-API-KEY: <api-key-cua-bo-do>
+IOT-KEY: <iot-key-cua-bo-do>
 Content-Type: application/json
 ```
 
@@ -206,7 +206,7 @@ Người dùng React
     └── JWT Bearer Token
 
 ESP32
-    └── API Key của bộ đo IoT
+    └──tên định danh IOT Key của bộ đo IoT
 ```
 
 ### 4.4. Chọn JSON view
@@ -844,7 +844,7 @@ Không thay đổi database
 
 ```http
 POST /api/energy-logs
-API-KEY: <api-key>
+IOT-KEY: <iot_key>
 Content-Type: application/json
 
 {
@@ -862,9 +862,9 @@ ESP32 gửi POST /api/energy-logs
         ↓
 AppController tắt identity check cho đúng endpoint
         ↓
-EnergyLogsController đọc API-KEY
+EnergyLogsController đọc iot_key
         ↓
-EnergyLogsService tìm iot_devices.api_key
+EnergyLogsService tìm iot_devices.iot_key
         ↓
 Kiểm tra iot_devices.status = active
         ↓

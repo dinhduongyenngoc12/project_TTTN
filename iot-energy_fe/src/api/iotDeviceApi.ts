@@ -22,7 +22,7 @@ export type LinkedDevice = {
 //Thông tin một bộ đo IoT trả về trong danh sách
 export type IotDeviceItem = {
     id: number;
-    api_key: string;
+    iot_key: string;
     status: IotDeviceStatus;
 
     last_seen_at: string | null;
@@ -44,7 +44,7 @@ export type IotDeviceFilters = {
 // PAYLOAD
 //Admin chỉ nhập API Key khi thêm bộ đo
 export type CreateIotDevicePayload = {
-    api_key: string;
+    iot_key: string;
 };
 
 //Response lấy danh sách bộ đo
@@ -65,7 +65,7 @@ export type CreateIotDeviceResponse = {
     message: string;
     iotDevice: {
         id: number;
-        api_key: string;
+        iot_key: string;
         status: IotDeviceStatus;
         last_seen_at: string | null;
         created_at: string;
@@ -87,7 +87,7 @@ export type DisableIotDeviceResponse = {
     data: {
         iot_device: {
             id: number;
-            api_key: string;
+            iot_key: string;
             status: IotDeviceStatus;
             updated_at: string | null;
         };
@@ -103,7 +103,7 @@ export type EnableIotDeviceResponse = {
 
     iotDevice: {
         id: number;
-        api_key: string;
+        iot_key: string;
         status: IotDeviceStatus;
         updated_at: string | null;
     };

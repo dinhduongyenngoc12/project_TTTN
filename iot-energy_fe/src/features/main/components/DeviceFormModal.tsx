@@ -46,7 +46,7 @@ export default function DeviceFormModal({
                         <p className="mt-1 text-sm text-slate-500">
                             {isEditing
                                 ? "Cập nhật thông tin thiết bị điện."
-                                : "Nhập thông tin thiết bị điện và API Key của bộ đo IoT."}
+                                : "Nhập thông tin thiết bị điện và IOT Key của bộ đo IoT."}
                         </p>
                     </div>
 
@@ -60,22 +60,22 @@ export default function DeviceFormModal({
                 </div>
 
                 <div className="mt-6 space-y-4">
-                    {/* API Key chỉ sử dụng khi thêm mới thiết bị */}
+                    {/* OTP Key chỉ sử dụng khi thêm mới thiết bị */}
                     {!isEditing && (
                         <label className="block">
                             <span className="text-sm font-semibold text-slate-700">
-                                API Key của bộ đo IoT
+                                Tên định danh IOT Key của bộ đo IoT
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
 
                             <input
                                 type="text"
                                 required
-                                value={formData.api_key}
+                                value={formData.iot_key}
                                 onChange={(event) =>
                                     onChange({
                                         ...formData,
-                                        api_key: event.target.value,
+                                        iot_key: event.target.value,
                                     })
                                 }
                                 className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400"

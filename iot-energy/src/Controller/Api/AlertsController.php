@@ -35,14 +35,14 @@ class AlertsController extends AppController
             return;
         }
 
-        if ($this->getAuthenticatedUserRole() !== 'user') {
-            $this->renderJson([
-                'status' => 'error',
-                'message' => 'Chức năng này chỉ dành cho người dùng.',
-            ], 403);
+        // if ($this->getAuthenticatedUserRole() !== 'user') {
+        //     $this->renderJson([
+        //         'status' => 'error',
+        //         'message' => 'Chức năng này chỉ dành cho người dùng.',
+        //     ], 403);
 
-            return;
-        }
+        //     return;
+        // }
 
         //chỉ đọc các alert_logs đã được tạo trước đó.
         $result = $this->alertService->getUserAlertHistory($userId, [

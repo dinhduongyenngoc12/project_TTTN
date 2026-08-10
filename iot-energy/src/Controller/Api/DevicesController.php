@@ -92,7 +92,7 @@ class DevicesController extends AppController
             'name' => trim((string)($requestData['name'] ?? '')),
             'device_type' => trim((string)($requestData['device_type'] ?? '')),
             'rated_power' => $requestData['rated_power'] ?? null,
-            'api_key' => trim((string)($requestData['api_key'] ?? '')),
+            'iot_key' => trim((string)($requestData['iot_key'] ?? '')),
         ];
 
         $result = $this->devicesService->create($data);

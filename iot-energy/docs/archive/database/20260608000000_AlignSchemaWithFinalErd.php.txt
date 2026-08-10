@@ -80,7 +80,7 @@ class AlignSchemaWithFinalErd extends BaseMigration
             $this->table('devices')
                 ->addColumn('name', 'string', ['limit' => 100, 'null' => true])
                 ->addColumn('user_id', 'integer', ['null' => true])
-                ->addColumn('api_key', 'string', ['limit' => 191, 'null' => true])
+                ->addColumn('iot_key', 'string', ['limit' => 191, 'null' => true])
                 ->addColumn('device_code', 'string', ['limit' => 191, 'null' => true])
                 ->addColumn('is_online', 'boolean', ['default' => false, 'null' => true])
                 ->addColumn('last_seen_at', 'datetime', ['default' => null, 'null' => true])
@@ -88,14 +88,14 @@ class AlignSchemaWithFinalErd extends BaseMigration
                 ->create();
         }
 
-        $this->addColumnIfMissing('devices', 'api_key', 'string', ['limit' => 191, 'null' => true]);
+        $this->addColumnIfMissing('devices', 'iot_key', 'string', ['limit' => 191, 'null' => true]);
         $this->addColumnIfMissing('devices', 'device_code', 'string', ['limit' => 191, 'null' => true]);
         $this->addColumnIfMissing('devices', 'is_online', 'boolean', ['default' => false, 'null' => true]);
         $this->addColumnIfMissing('devices', 'last_seen_at', 'datetime', ['default' => null, 'null' => true]);
         $this->addColumnIfMissing('devices', 'photo_path', 'string', ['limit' => 255, 'null' => true]);
 
         $this->addIndexIfMissing('devices', ['user_id'], 'idx_devices_user_id');
-        $this->addUniqueIndexIfSafe('devices', ['api_key'], 'uq_devices_api_key', true);
+        $this->addUniqueIndexIfSafe('devices', ['iot_key'], 'uq_devices_iot_key', true);
         $this->addUniqueIndexIfSafe('devices', ['device_code'], 'uq_devices_device_code', true);
     }
 

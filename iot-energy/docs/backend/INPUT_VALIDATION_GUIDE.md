@@ -175,7 +175,7 @@ Ví dụ payload:
 
 ```ts
 type CreateDevicePayload = {
-    api_key: string;
+    iot_key: string;
     name: string;
     device_type: string;
     rated_power: number | null;
@@ -186,7 +186,7 @@ TypeScript giúp phát hiện lỗi như:
 
 ```ts
 const payload: CreateDevicePayload = {
-    api_key: 123, // lỗi lúc build vì cần string
+   iot_key: 123, // lỗi lúc build vì cần string
 };
 ```
 
@@ -317,7 +317,7 @@ Backend chỉ lấy:
 - `name`.
 - `device_type`.
 - `rated_power`.
-- `api_key`.
+- `iot_key`.
 
 ### Khi sửa thiết bị
 
@@ -329,7 +329,7 @@ Backend chỉ lấy:
 
 Do đó client không thể sửa qua API này:
 
-- `api_key`.
+- `iot_key`.
 - `iot_device_id`.
 - `status`.
 - `activated_at`.

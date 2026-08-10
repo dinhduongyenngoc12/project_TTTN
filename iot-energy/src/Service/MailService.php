@@ -12,16 +12,23 @@ use Throwable;
 
 class MailService
 {
-    private const FROM_EMAIL = 'ngocddy@teamsolutions.vn';
-    private const FROM_NAME = 'IoT Energy';
-
-    public function sendOtp(string $otp, string $email): bool
+  public function sendOtp(string $otp, string $email): bool
     {
+        $subject = "[IoT Energy] Mã xác thực đăng nhập (OTP)";
+        
+        $body = "Chào bạn,\n\n";
+        $body .= "Bạn vừa yêu cầu mã xác thực (OTP) để truy cập vào Hệ thống giám sát điện năng IoT Energy.\n\n";
+        $body .= "Mã OTP của bạn là: " . $otp . "\n\n";
+        $body .= "Mã này có hiệu lực trong vòng 5 phút. Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn cho tài khoản của bạn.\n\n";
+        $body .= "Nếu bạn không thực hiện yêu cầu này, xin vui lòng bỏ qua email hoặc liên hệ với quản trị viên hệ thống.\n\n";
+        $body .= "Trân trọng,\n";
+        $body .= "Hệ thống IoT Energy";
+
         return $this->sendTextMail(
             $email,
-            "Mã OTP của bạn",
-            "Mã OTP: " . $otp,
-            "Send OTP mail failed"
+            $subject,
+            $body,
+            "Gửi email OTP thất bại"
         );
     }
 
@@ -34,7 +41,8 @@ class MailService
             $resetLink . "\n\n" .
             "Liên kết này có hiệu lực trong 5 phút và chỉ dùng được một lần.\n\n" .
             "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" .
-            "IoT Energy";
+            "Trân trọng,\n" .
+            "Hệ thống IoT Energy";
 
         return $this->sendTextMail(
             $email,
@@ -83,7 +91,8 @@ class MailService
             $mailer = new Mailer('default');
 
             $mailer
-                ->setFrom([self::FROM_EMAIL => self::FROM_NAME])
+                // OTP, đặt lại mật khẩu và cảnh báo cùng dùng người gửi
+                // đã cấu hình trong Email.default của app_local.php.
                 ->setTo($to)
                 ->setSubject($subject)
                 ->deliver($body);

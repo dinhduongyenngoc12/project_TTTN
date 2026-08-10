@@ -8,7 +8,7 @@ use Cake\ORM\Entity;
 class IotDevice extends Entity
 {
     protected array $_accessible = [
-        'api_key' => true,
+        'iot_key' => true,
         'status' => true,
         'last_seen_at' => true,
         'created_at' => true,

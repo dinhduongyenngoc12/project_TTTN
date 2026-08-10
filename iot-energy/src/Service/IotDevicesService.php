@@ -51,7 +51,7 @@ class IotDevicesService
 
         if ($keyword !== '') {
             $query->where([
-                'IotDevices.api_key LIKE' => '%' . $keyword . '%',
+                'IotDevices.iot_key LIKE' => '%' . $keyword . '%',
             ]);
         }
 
@@ -69,7 +69,7 @@ class IotDevicesService
 
             $iotDevices[] = [
                 'id' => (int)$iotDevice->id,
-                'api_key' => $iotDevice->api_key,
+                'iot_key' => $iotDevice->iot_key,
                 'status' => $iotDevice->status,
                 'last_seen_at' => $iotDevice->last_seen_at,
                 'created_at' => $iotDevice->created_at,
@@ -103,16 +103,16 @@ class IotDevicesService
     //Thêm bộ đo IoT mới
     public function create(array $data): array
     {
-        $apiKey = trim((string)($data['api_key'] ?? ''));
+        $apiKey = trim((string)($data['iot_key'] ?? ''));
 
         if ($apiKey === '') {
             return [
                 'success' => false,
                 'statusCode' => 422,
-                'message' => 'Vui lòng nhập API Key của bộ đo IoT.',
+                'message' => 'Vui lòng nhập tên định danh IOT Key của bộ đo IoT.',
                 'errors' => [
-                    'api_key' => [
-                        'required' => 'Vui lòng nhập API Key của bộ đo IoT.'
+                    'iot_key' => [
+                        'required' => 'Vui lòng nhập tên định danh IOT Key của bộ đo IoT.'
                     ],
                 ],
             ];
@@ -121,7 +121,7 @@ class IotDevicesService
         //Kiểm tra trước để trả thông báo rõ ràng
         $existingIotDevice = $this->IotDevices->find()
             ->where([
-                'IotDevices.api_key' => $apiKey
+                'IotDevices.iot_key' => $apiKey
             ])
             ->first();
 
@@ -131,7 +131,7 @@ class IotDevicesService
                 'statusCode' => 422,
                 'message' => 'API Key đã tồn tại trong hệ thống.',
                 'errors' => [
-                    'api_key' => [
+                    'iot_key' => [
                         'unique' => 'API Key đã tồn tại trong hệ thống.'
                     ],
                 ],
@@ -143,7 +143,7 @@ class IotDevicesService
         $iotDevice = $this->IotDevices->newEmptyEntity();
 
         $iotDevice = $this->IotDevices->patchEntity($iotDevice, [
-            'api_key' => $apiKey,
+            'iot_key' => $apiKey,
 
             //Bộ đo được cấp phép ngay khi admin khai báo
             'status' => 'active',
@@ -242,7 +242,7 @@ class IotDevicesService
                         'data' => [
                             'iot_device' => [
                                 'id' => (int)$iotDevice->id,
-                                'api_key' => $iotDevice->api_key,
+                                'iot_key' => $iotDevice->iot_key,
                                 'status' => $iotDevice->status,
                                 'updated_at' => $iotDevice->updated_at
                             ],
@@ -300,7 +300,7 @@ class IotDevicesService
             'message' => 'Kích hoạt lại bộ đo IoT thành công.',
             'data' => [
                 'id' => (int)$iotDevice->id,
-                'api_key' => $iotDevice->api_key,
+                'iot_key' => $iotDevice->iot_key,
                 'status' => $iotDevice->status,
                 'updated_at' => $iotDevice->updated_at
             ],

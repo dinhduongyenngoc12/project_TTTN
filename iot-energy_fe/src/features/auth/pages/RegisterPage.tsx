@@ -26,7 +26,7 @@ export default function RegisterPage() {
     //     });
     // };
 
-    const { handleRegister, isPending, msg } = useRegisterForm();
+    const { handleRegister, isPending, msg, isRegisterSuccess } = useRegisterForm();
 
     const {
         register,
@@ -94,7 +94,11 @@ export default function RegisterPage() {
                                 <Button title="ĐĂNG KÝ" disabled={isPending} />
 
                                 {msg && (
-                                    <p className="mt-3 text-center text-sm text-red-500">
+                                    <p
+                                        className={`mt-3 text-center text-sm ${
+                                            isRegisterSuccess ? "text-green-600" : "text-red-500"
+                                        }`}
+                                    >
                                         {msg}
                                     </p>
                                 )}

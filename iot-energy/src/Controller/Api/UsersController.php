@@ -406,13 +406,26 @@ class UsersController extends AppController
         $this->request->allowMethod(['post']);
 
         $user = $this->Users->newEmptyEntity();
-        $user = $this->Users->patchEntity($user, $this->request->getData());
+
+        // Chỉ nhận các trường đăng ký hợp lệ, không nhận id hoặc role từ client.
+        $registrationData = [
+            'username' => $this->request->getData('username'),
+            'email' => $this->request->getData('email'),
+            'password' => $this->request->getData('password'),
+        ];
+
+        $user = $this->Users->patchEntity($user, $registrationData);
+
+        // Mọi tài khoản đăng ký công khai luôn là user.
+        // Tài khoản Admin chỉ được tạo trực tiếp bởi người quản trị database.
+        $user->set('role', 'user');
 
         if ($user->getErrors()) {
             return $this->error('Validation failed', $user->getErrors(), 422);
         }
 
         //Kiem tra trung da co trong buildRules() UserTable
+        //LOAI BO VI DU THUA
         if ($this->Users->find()->where(['username' => $user->username])->first()) {
             $this->renderJson([
                 'status' => 'error',

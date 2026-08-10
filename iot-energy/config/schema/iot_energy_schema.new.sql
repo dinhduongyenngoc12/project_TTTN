@@ -182,13 +182,13 @@ DROP TABLE IF EXISTS `iot_devices`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `iot_devices` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `api_key` varchar(100) NOT NULL,
+  `iot_key` varchar(100) NOT NULL,
   `status` enum('active','disabled') NOT NULL DEFAULT 'active',
   `last_seen_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_iot_devices_api_key` (`api_key`)
+  UNIQUE KEY `uq_iot_devices_iot_key` (`iot_key`)
 ) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

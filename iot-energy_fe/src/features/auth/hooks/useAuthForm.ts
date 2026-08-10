@@ -175,6 +175,7 @@ export function useRegisterForm() {
     const { mutation, isPending } = useRegisterData();
     const navigate = useNavigate();
     const [msg, setMsg] = useState("");
+    const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
 
     const handleRegister = ({ username, email, password }: {
         username: string;
@@ -184,6 +185,7 @@ export function useRegisterForm() {
         if (mutation.isPending) return;
 
         setMsg("");
+        setIsRegisterSuccess(false);
 
         mutation.mutate(
             {
@@ -195,13 +197,20 @@ export function useRegisterForm() {
                 onSuccess: (data) => {
                     console.log("Register success:", data);
 
-                    navigate("/login", {
-                        replace: true,
-                    });
+                    // Thông báo kết quả trước khi chuyển người dùng sang trang đăng nhập.
+                    setIsRegisterSuccess(true);
+                    setMsg("Đăng ký tài khoản thành công");
+
+                    setTimeout(() => {
+                        navigate("/login", {
+                            replace: true,
+                        });
+                    }, 1200);
                 },
                 onError: (error) => {
                     console.log("Register error:", error);
 
+                    setIsRegisterSuccess(false);
                     setMsg(
                         getApiErrorMessage(
                             error,
@@ -217,6 +226,7 @@ export function useRegisterForm() {
         handleRegister,
         isPending,
         msg,
+        isRegisterSuccess,
     };
 }
 

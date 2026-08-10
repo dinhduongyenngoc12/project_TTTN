@@ -7,7 +7,7 @@ namespace App\Controller\Api;
 use App\Controller\AppController;
 use App\Service\EnergyLogsService;
 use Cake\Event\EventInterface;
-
+use Cake\Log\Log;
 class EnergyLogsController extends AppController
 {
     protected EnergyLogsService $energyLogsService;
@@ -73,12 +73,17 @@ class EnergyLogsController extends AppController
     {
         $this->request->allowMethod(['post']);
 
-        $apiKey = trim($this->request->getHeaderLine('API-KEY'));                //xác thực bằng header
+        $apiKey = trim($this->request->getHeaderLine('IOT-KEY'));                //xác thực bằng header
 
         $result = $this->energyLogsService->createFromIot(
             $apiKey,
-            $this->request->getData()
+            $this->request->getData()         
         );
+
+        //Xuat log ra terminal de test
+        $time = date('Y-m-d H:i:s');
+        file_put_contents('php://stderr', "[{$time}]GT: ".print_r($this->request->getData(),true)." \n");
+
 
         if (!$result['success']) {
             $this->renderJson([
@@ -96,5 +101,6 @@ class EnergyLogsController extends AppController
             'data' => $result['data'],
         ], $result['statusCode']);
     }
+    
     
 }

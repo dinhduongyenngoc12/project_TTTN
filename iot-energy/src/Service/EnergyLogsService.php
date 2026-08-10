@@ -67,7 +67,7 @@ class EnergyLogsService
 
         $iotDevice = $this->IotDevices->find()
             ->where([
-                'api_key' => $apiKey,
+                'iot_key' => $apiKey,
             ])
             ->first();
 

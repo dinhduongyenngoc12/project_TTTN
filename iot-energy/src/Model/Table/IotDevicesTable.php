@@ -14,7 +14,7 @@ class IotDevicesTable extends Table
         parent::initialize($config);
 
         $this->setTable('iot_devices');
-        $this->setDisplayField('api_key');
+        $this->setDisplayField('iot_key');
         $this->setPrimaryKey('id');
 
         $this->hasMany('Devices', [
@@ -25,12 +25,12 @@ class IotDevicesTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->scalar('api_key')
-            ->maxLength('api_key', 100)
-            ->requirePresence('api_key', 'create')
+            ->scalar('iot_key')
+            ->maxLength('iot_key', 100)
+            ->requirePresence('iot_key', 'create')
             ->notEmptyString(
-                'api_key',
-                'Vui lòng nhập API Key của bộ đo IoT'
+                'iot_key',
+                'Vui lòng nhập tên định danh IOT Key của bộ đo IoT'
             );
 
         $validator
@@ -51,10 +51,10 @@ class IotDevicesTable extends Table
         //Mỗi bộ đo phải có một API Key duy nhất
         $rules->add(
             $rules->isUnique(
-                ['api_key'],
+                ['iot_key'],
                 'API Key đã tồn tại trong hệ thống'
             ),
-            ['errorField' => 'api_key']
+            ['errorField' => 'iot_key']
         );
 
         return $rules;

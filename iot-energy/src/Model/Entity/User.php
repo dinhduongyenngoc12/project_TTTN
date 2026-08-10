@@ -37,11 +37,16 @@ class User extends Entity
      *
      * @var array<string, bool>
      */
+
+
+    //PHẢI TÌM HIỂU THÊM VỀ ORM CAKEPHP, BỎ TRƯỜNG USERNAME VÌ DƯ THỪA HOẶC ĐỔI TÊN (REGISTER)
+
     protected array $_accessible = [
         "id"=> true,
         'username' => true,
         'password' => true,
-        'role' => true,
+        // Không cho dữ liệu từ request tự gán quyền Admin qua patchEntity().
+        'role' => false,
         'email' => true,
         'devices' => true,
         'refresh_tokens' => true

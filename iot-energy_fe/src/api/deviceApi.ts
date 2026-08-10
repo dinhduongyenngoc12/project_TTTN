@@ -31,7 +31,7 @@ export type DeviceItem = {
     username?: string | null;
 
     //Đây là tên alias trong JSON response, không phải tên cột DB (tránh trùng)
-    iot_api_key?: string | null;
+    iot_iot_key?: string | null;
     iot_status?: IotDeviceStatus | null;
     iot_last_seen_at?: string | null;
 };
@@ -39,7 +39,7 @@ export type DeviceItem = {
 //FORM
 //Dữ liệu dùng chung cho form thêm và sửa thiết bị
 export type DeviceFormData = {
-    api_key: string;
+    iot_key: string;
     name: string;
     device_type: string;
     rated_power: number | null;
@@ -48,7 +48,7 @@ export type DeviceFormData = {
 //Payload dùng khi thêm thiết bị
 //Backend cần API Key để xác định bộ đo IoT
 export type CreateDevicePayload = {
-    api_key: string;
+    iot_key: string;
     name: string;
     device_type: string;
     rated_power: number | null;

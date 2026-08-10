@@ -23,7 +23,7 @@ export default function DevicePage() {
     const [submitting, setSubmitting] = useState(false);
 
     const [formData, setFormData] = useState<DeviceFormData>({
-        api_key: "",
+        iot_key: "",
         name: "",
         device_type: "Khác",
         rated_power: null,
@@ -66,7 +66,7 @@ export default function DevicePage() {
 
         //Reset đầy đủ dữ liệu form, bao gồm API Key
         setFormData({
-            api_key: "",
+            iot_key: "",
             name: "",
             device_type: "Khác",
             rated_power: null,
@@ -81,7 +81,7 @@ export default function DevicePage() {
 
         setFormData({
             //Không cập nhật API Key khi sửa thiết bị
-            api_key: "",
+            iot_key: "",
             name: device.name,
             device_type: device.device_type,
             rated_power: device.rated_power ?? null,
@@ -99,8 +99,8 @@ export default function DevicePage() {
 
     async function handleSubmitDevice() {
         //API Key chỉ bắt buộc khi thêm mới thiết bị
-        if (!editingDevice && !formData.api_key.trim()) {
-            setError("Vui lòng nhập API Key của bộ đo IoT.");
+        if (!editingDevice && !formData.iot_key.trim()) {
+            setError("Vui lòng nhập tên định danh IOT Key của bộ đo IoT.");
             return;
         }
 
@@ -146,7 +146,7 @@ export default function DevicePage() {
             } else {
                 //Khi thêm phải gửi API Key để backend tìm và liên kết bộ đo IoT
                 const createPayload: CreateDevicePayload = {
-                    api_key: formData.api_key.trim(),
+                    iot_key: formData.iot_key.trim(),
                     name: formData.name.trim(),
                     device_type: formData.device_type.trim(),
                     rated_power: ratedPower,

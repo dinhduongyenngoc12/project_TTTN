@@ -100,7 +100,7 @@ export default function AdminIotDevicesPage() {
 
         try {
             const response = await createIotDeviceApi({
-                api_key: apiKey,
+                iot_key: apiKey,
             });
 
             setFeedback({
@@ -128,7 +128,7 @@ export default function AdminIotDevicesPage() {
     //Vô hiệu hóa bộ đo và ngừng theo dõi các thiết bị đang active
     async function handleDisable(iotDevice: IotDeviceItem) {
         const confirmed = window.confirm(
-            `Bạn có chắc muốn vô hiệu hóa bộ đo ${iotDevice.api_key}?`,
+            `Bạn có chắc muốn vô hiệu hóa bộ đo ${iotDevice.iot_key}?`,
         );
 
         if (!confirmed) {
@@ -165,7 +165,7 @@ export default function AdminIotDevicesPage() {
     //Kích hoạt lại quyền sử dụng bộ đo
     async function handleEnable(iotDevice: IotDeviceItem) {
         const confirmed = window.confirm(
-            `Bạn có chắc muốn kích hoạt lại bộ đo ${iotDevice.api_key}?`,
+            `Bạn có chắc muốn kích hoạt lại bộ đo ${iotDevice.iot_key}?`,
         );
 
         if (!confirmed) {
@@ -364,7 +364,7 @@ export default function AdminIotDevicesPage() {
                                         className="border-b border-slate-100 last:border-b-0"
                                     >
                                         <td className="px-5 py-4 font-medium text-slate-900">
-                                            {iotDevice.api_key}
+                                            {iotDevice.iot_key}
                                         </td>
 
                                         <td className="px-5 py-4">

@@ -57,7 +57,7 @@ class DevicesService
 
                 'username' => 'u.username',
 
-                'iot_api_key' => 'iot.api_key',      //alias: iot.api_key AS iot_api_key
+                'iot_iot_key' => 'iot.iot_key',      //alias: iot.iot_key AS iot_iot_key
                 'iot_status' => 'iot.status',
                 'iot_last_seen_at' => 'iot.last_seen_at',
             ]);
@@ -91,28 +91,28 @@ class DevicesService
 
         $device = $this->Devices->newEmptyEntity();
 
-        $apiKey = trim((string)($data['api_key'] ?? ''));
+        $apiKey = trim((string)($data['iot_key'] ?? ''));
 
         if ($apiKey === '') {
-            $device->setError('api_key', [
-                'required' => 'Vui lòng nhập API Key của bộ đo IoT',
+            $device->setError('iot_key', [
+                'required' => 'Vui lòng nhập tên định danh IOT Key của bộ đo IoT',
             ]);
 
             return [
                 'device' => $device,
                 'saved' => false,
-                'message' => 'Vui lòng nhập API Key của bộ đo IoT',
+                'message' => 'Vui lòng nhập tên định danh IOT Key của bộ đo IoT',
             ];
         }
 
         $iotDevice = $iotDevicesTable->find()
             ->where([
-                'IotDevices.api_key' => $apiKey,
+                'IotDevices.iot_key' => $apiKey,
             ])
             ->first();
 
         if (!$iotDevice) {
-            $device->setError('api_key', [
+            $device->setError('iot_key', [
                 'notFound' => 'API Key không tồn tại trong hệ thống',
             ]);
 
@@ -124,7 +124,7 @@ class DevicesService
         }
 
         if ($iotDevice->status !== 'active') {
-            $device->setError('api_key', [
+            $device->setError('iot_key', [
                 'disabled' => 'Bộ đo IoT đã bị vô hiệu hóa',
             ]);
 
@@ -156,13 +156,13 @@ class DevicesService
                     $lockedIotDevice = $iotDevicesTable->find()
                         ->where([
                             'IotDevices.id' => $iotDevice->id,
-                            'IotDevices.api_key' => $apiKey,
+                            'IotDevices.iot_key' => $apiKey,
                         ])
                         ->epilog('FOR UPDATE')
                         ->first();
 
                     if (!$lockedIotDevice) {
-                        $device->setError('api_key', [
+                        $device->setError('iot_key', [
                             'notFound' => 'API Key không còn tồn tại trong hệ thống',
                         ]);
 
@@ -176,7 +176,7 @@ class DevicesService
                     * vì trạng thái có thể đã thay đổi sau lần kiểm tra đầu tiên.
                     */
                     if ($lockedIotDevice->status !== 'active') {
-                        $device->setError('api_key', [
+                        $device->setError('iot_key', [
                             'disabled' => 'Bộ đo IoT đã bị vô hiệu hóa',
                         ]);
 
@@ -205,7 +205,7 @@ class DevicesService
                     $deviceData = $data;
 
                     unset(
-                        $deviceData['api_key'],
+                        $deviceData['iot_key'],
                         $deviceData['id'],
                         $deviceData['status'],
                         $deviceData['iot_device_id'],
@@ -312,7 +312,7 @@ class DevicesService
         }
 
         unset(
-            $data['api_key'],
+            $data['iot_key'],
             $data['iot_device_id'],
             $data['status'],
             $data['activated_at'],
